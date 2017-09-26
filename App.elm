@@ -90,14 +90,21 @@ renderTriangle triangle =
 
 
 makeTriangle : Float -> Vec2 -> Float -> Float -> Float -> Triangle
-makeTriangle color position rotation skew size =
-    { color = (-(Vec2.getY position) + color) /2
-    , transform =
-        Mat4.identity
-            |> Mat4.translate3 (Vec2.getX position) (Vec2.getY position) 0
-            |> Mat4.rotate rotation (vec3 0 0 1)
-            |> Mat4.scale3 (size * skew) (size / skew) 1
-    }
+makeTriangle color position rotation skew s =
+    let
+        height =
+            -(Vec2.getY position)
+
+        size =
+            s * (2 + height) / 2
+    in
+        { color = (height + color) / 2
+        , transform =
+            Mat4.identity
+                |> Mat4.translate3 (Vec2.getX position) (Vec2.getY position) 0
+                |> Mat4.rotate rotation (vec3 0 0 1)
+                |> Mat4.scale3 (size * skew) (size / skew) 1
+        }
 
 
 makeSkew : Bool -> Float -> Float
@@ -112,7 +119,7 @@ triangleGenerator : Random.Generator Triangle
 triangleGenerator =
     Random.map5 makeTriangle
         -- color
-        (Random.float 0 0.4)
+        (Random.float 0 0.2)
         -- position
         (Random.map2 vec2 (Random.float -1 1) (Random.float -1 0))
         -- rotation
@@ -120,7 +127,7 @@ triangleGenerator =
         -- skew
         (Random.map2 makeSkew Random.bool (Random.float 1 1.5))
         -- size
-        (Random.float 0.01 0.1)
+        (Random.float 0.01 0.05)
 
 
 
