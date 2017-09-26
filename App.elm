@@ -1,5 +1,6 @@
 module App exposing (..)
 
+import Html.Attributes
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
@@ -90,12 +91,12 @@ renderTriangle triangle =
 
 makeTriangle : Float -> Vec2 -> Float -> Float -> Float -> Triangle
 makeTriangle color position rotation skew size =
-    { color = color
+    { color = (-(Vec2.getY position) + color) /2
     , transform =
         Mat4.identity
-            |> Mat4.scale3 (size * skew) (size / skew) 1
-            |> Mat4.rotate rotation (vec3 0 0 1)
             |> Mat4.translate3 (Vec2.getX position) (Vec2.getY position) 0
+            |> Mat4.rotate rotation (vec3 0 0 1)
+            |> Mat4.scale3 (size * skew) (size / skew) 1
     }
 
 
@@ -110,11 +111,16 @@ makeSkew isVertical scale =
 triangleGenerator : Random.Generator Triangle
 triangleGenerator =
     Random.map5 makeTriangle
-        (Random.float 0 1)
-        (Random.map2 vec2 (Random.float -1 1) (Random.float -1 1))
+        -- color
+        (Random.float 0 0.4)
+        -- position
+        (Random.map2 vec2 (Random.float -1 1) (Random.float -1 0))
+        -- rotation
         (Random.float 0 (turns 1))
-        (Random.map2 makeSkew Random.bool (Random.float 0.1 5))
-        (Random.float 0.2 2)
+        -- skew
+        (Random.map2 makeSkew Random.bool (Random.float 1 1.5))
+        -- size
+        (Random.float 0.01 0.1)
 
 
 
@@ -122,12 +128,14 @@ triangleGenerator =
 
 
 triangles =
-    Random.step (Random.list 100 triangleGenerator) (Random.initialSeed 0)
+    Random.step (Random.list 8000 triangleGenerator) (Random.initialSeed 0)
         |> Tuple.first
         |> List.map renderTriangle
 
 
 main =
     WebGL.toHtml
-        []
+        [ Html.Attributes.width 1000
+        , Html.Attributes.height 700
+        ]
         triangles
