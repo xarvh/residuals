@@ -141,3 +141,43 @@ quadMesh =
 quad : Uniforms -> WebGL.Entity
 quad uniforms =
     WebGL.entity vertexShader fragmentShader quadMesh uniforms
+
+
+
+-- Icosagon
+
+
+icosagonVertices : List MeshVertex
+icosagonVertices =
+    let
+        n =
+            20
+
+        half =
+            0.5
+
+        indexToVertex index =
+            let
+                angle =
+                    (turns 1) * toFloat index / n
+            in
+                vec3 (half * cos angle) (half * sin angle) 0
+
+        perimeter =
+            -- range is inclusive, so the first point will be repeated
+            List.range 0 n |> List.map indexToVertex
+
+        fan =
+            vec3 0 0 0 :: perimeter
+    in
+        List.map MeshVertex fan
+
+
+icosagonMesh : Mesh MeshVertex
+icosagonMesh =
+    WebGL.triangleFan icosagonVertices
+
+
+icosagon : Uniforms -> WebGL.Entity
+icosagon uniforms =
+    WebGL.entity vertexShader fragmentShader icosagonMesh uniforms

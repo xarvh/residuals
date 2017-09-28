@@ -120,7 +120,7 @@ renderHero viewMatrix hero =
                     |> Mat4.mul viewMatrix
             }
     in
-        Primitives.tris uniforms
+        Primitives.icosagon uniforms
 
 
 
