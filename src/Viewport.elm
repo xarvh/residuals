@@ -4,6 +4,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Mouse
 import Window
+import Task
 
 
 viewportSize : Window.Size -> ( Float, Float )
@@ -58,3 +59,39 @@ worldToCameraMatrix window =
             Mat4.identity
     in
         Mat4.mul projection camera
+
+
+
+-- TEA
+
+
+type alias Model =
+    Window.Size
+
+
+type Msg
+    = WindowResizes Window.Size
+
+
+init : ( Model, Cmd Msg )
+init =
+    let
+        model =
+            { width = 100, height = 100 }
+
+        cmd =
+            Task.perform WindowResizes Window.size
+    in
+        ( model, cmd )
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        WindowResizes size ->
+            size
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Window.resizes WindowResizes
