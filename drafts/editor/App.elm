@@ -141,18 +141,24 @@ closestObstacle model =
             |> Maybe.andThen isCloseEnough
 
 
-updateRotate : Float -> Model -> Model
-updateRotate a model =
+withObstacleUnderMouse : Model -> (Obstacle -> List Obstacle -> List Obstacle) -> Model
+withObstacleUnderMouse model mutator =
     case closestObstacle model of
         Nothing ->
             model
 
         Just obstacle ->
-            { model
-                | obstacles =
-                    model.obstacles
-                        |> List.Extra.replaceIf (\o -> o == obstacle) { obstacle | angle = obstacle.angle + a }
-            }
+            { model | obstacles = mutator obstacle model.obstacles }
+
+
+rotateObstacle : Float -> Obstacle -> List Obstacle -> List Obstacle
+rotateObstacle a obstacle list =
+    List.Extra.replaceIf (\o -> o == obstacle) { obstacle | angle = obstacle.angle + a } list
+
+
+duplicateObstacle : Obstacle -> List Obstacle -> List Obstacle
+duplicateObstacle obstacle list =
+    { obstacle | width = obstacle.width + 0.000001 } :: list
 
 
 updateDrag : Model -> Model
@@ -216,12 +222,15 @@ update msg model =
             { model | window = size }
 
         OnKeyboard code ->
-            case Char.fromCode code of
-                'A' ->
-                    updateRotate (degrees 5) model
+            case Debug.log "" <| Char.fromCode code of
+                'a' ->
+                    withObstacleUnderMouse model (rotateObstacle (degrees 5))
 
-                'S' ->
-                    updateRotate (degrees -5) model
+                's' ->
+                    withObstacleUnderMouse model (rotateObstacle (degrees -5))
+
+                'd' ->
+                    withObstacleUnderMouse model duplicateObstacle
 
                 ' ' ->
                     let
@@ -315,7 +324,7 @@ subscriptions model =
         , Mouse.ups (always DragStop)
         , Mouse.moves MouseMove
         , Window.resizes WindowResize
-        , Keyboard.ups OnKeyboard
+        , Keyboard.presses OnKeyboard
         ]
 
 
