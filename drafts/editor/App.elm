@@ -36,8 +36,7 @@ type alias Model =
     { obstacles : List Obstacle
     , maybeDrag : Maybe Drag
     , mousePosition : Vec2
-    , windowSize : Window.Size
-    , viewMatrix : Mat4
+    , window : Window.Size
     }
 
 
@@ -65,15 +64,59 @@ init =
                   }
                 ]
             , maybeDrag = Nothing
-            , windowSize = { width = 100, height = 100 }
+            , window =
+                { width = 100
+                , height = 100
+                }
             , mousePosition = vec2 0 0
-            , viewMatrix = Mat4.identity
             }
 
         cmd =
             Window.size |> Task.perform WindowResize
     in
         ( model, cmd )
+
+
+
+-- viewport
+
+
+windowSizeInGameCoordinates : Model -> ( Float, Float )
+windowSizeInGameCoordinates model =
+    let
+        viewportRatio =
+            toFloat model.window.width / toFloat model.window.height
+
+        viewportH =
+            2
+
+        viewportW =
+            viewportH * viewportRatio
+    in
+        ( viewportW, viewportH )
+
+
+mouseToGameCoordinates : Model -> Mouse.Position -> Vec2
+mouseToGameCoordinates model position =
+    let
+        -- window geometry
+        ( wW, wH ) =
+            ( toFloat model.window.width, toFloat model.window.height )
+
+        ( mX, mY ) =
+            ( toFloat position.x, toFloat position.y )
+
+        -- viewport geometry
+        ( vW, vH ) =
+            windowSizeInGameCoordinates model
+
+        x =
+            vW * (mX / wW - 0.5)
+
+        y =
+            vH * ((wH / 2) - mY) / wH
+    in
+        vec2 x y
 
 
 
@@ -100,7 +143,7 @@ closestObstacle model =
 
 updateRotate : Float -> Model -> Model
 updateRotate a model =
-    case Debug.log "--" <| closestObstacle model of
+    case closestObstacle model of
         Nothing ->
             model
 
@@ -167,36 +210,10 @@ update msg model =
                     { model | maybeDrag = Nothing, obstacles = drag.obstacle :: model.obstacles }
 
         MouseMove position ->
-            let
-                -- window geometry
-                ( wW, wH ) =
-                    ( toFloat model.windowSize.width, toFloat model.windowSize.height )
-
-                ( wX, wY ) =
-                    ( toFloat position.x, toFloat position.y )
-
-                -- viewport geometry
-                ( vW, vH ) =
-                    ( 2, 2 )
-
-                x =
-                    vW * (wX - wW / 2) / wW
-
-                y =
-                    vH * (-wY + wH / 2) / wH
-            in
-                updateDrag { model | mousePosition = vec2 x y }
+            updateDrag { model | mousePosition = mouseToGameCoordinates model position }
 
         WindowResize size ->
-          let
-              w = toFloat size.width
-              h = toFloat size.height
-
-              viewMatrix =
-                Mat4.identity
-                  |> Mat4.scale3 (h/w) 1 1
-          in
-            { model | windowSize = size, viewMatrix = viewMatrix }
+            { model | window = size }
 
         OnKeyboard code ->
             case Char.fromCode code of
@@ -212,12 +229,13 @@ update msg model =
                             Debug.log "" model.obstacles
                     in
                         model
+
                 _ ->
-                  model
+                    model
 
 
 
--- view
+-- entities
 
 
 renderObstacle : Mat4 -> Float -> Obstacle -> WebGL.Entity
@@ -231,17 +249,28 @@ renderObstacle viewMatrix color obstacle =
                     |> Mat4.rotate obstacle.angle (vec3 0 0 1)
                     |> Mat4.scale3 obstacle.width obstacle.height 1
                     |> Mat4.mul viewMatrix
-
             }
     in
         Primitives.quad uniforms
 
 
-view : Model -> Html Msg
-view model =
+entities : Model -> List WebGL.Entity
+entities model =
     let
+        ( vW, vH ) =
+            windowSizeInGameCoordinates model
+
+        projection =
+            Mat4.makeScale3 (2 / vW) (2 / vH) 1
+
+        camera =
+            Mat4.identity
+
+        projectionAndCamera =
+            Mat4.mul projection camera
+
         obstacles =
-            List.map (renderObstacle model.viewMatrix 0.3) model.obstacles
+            List.map (renderObstacle projectionAndCamera 0.3) model.obstacles
 
         drag =
             case model.maybeDrag of
@@ -249,20 +278,30 @@ view model =
                     []
 
                 Just drag ->
-                    [ renderObstacle model.viewMatrix 0.7 drag.obstacle ]
+                    [ renderObstacle projectionAndCamera 0.7 drag.obstacle ]
     in
         [ obstacles
         , drag
         ]
             |> List.concat
-            |> WebGL.toHtml
-                [ Html.Attributes.width model.windowSize.width
-                , Html.Attributes.height model.windowSize.height
-                , Html.Attributes.style
-                    [ ( "width", "99vw" )
-                    , ( "height", "99vh" )
-                    ]
+
+
+
+-- view
+
+
+view : Model -> Html Msg
+view model =
+    model
+        |> entities
+        |> WebGL.toHtml
+            [ Html.Attributes.width model.window.width
+            , Html.Attributes.height model.window.height
+            , Html.Attributes.style
+                [ ( "width", "99vw" )
+                , ( "height", "99vh" )
                 ]
+            ]
 
 
 
