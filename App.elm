@@ -1,6 +1,5 @@
 module App exposing (..)
 
-import Primitives
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
@@ -13,20 +12,20 @@ import Window
 import WebGL
 
 
+--
+
+import Level0
+import Obstacle exposing (Obstacle)
+import Primitives
+import Viewport
+
+
 -- Types
-
-
-type alias Obstacle =
-    { c : Vec2
-    , w : Float
-    , h : Float
-    , angle : Float
-    }
 
 
 type alias Model =
     { obstacles : List Obstacle
-    , windowSize : Window.Size
+    , window : Window.Size
     , mousePosition : Vec2
     , mouseButton : Bool
     }
@@ -42,20 +41,12 @@ type Msg
 -- init
 
 
-obs =
-    [ { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 -0.5 0 }
-    , { angle = turns 0.25, w = 0.5, h = 0.1, c = vec2 0.5 0.25 }
---     , { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 0 0 }
---     , { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 0 0 }
-    ]
-
-
 init : ( Model, Cmd Msg )
 init =
     let
         model =
-            { obstacles = obs
-            , windowSize = { width = 100, height = 100 }
+            { obstacles = Level0.obstacles
+            , window = { width = 100, height = 100 }
             , mousePosition = vec2 0 0
             , mouseButton = False
             }
@@ -74,64 +65,34 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         MouseMove position ->
-            let
-                -- window geometry
-                ( wW, wH ) =
-                    ( toFloat model.windowSize.width, toFloat model.windowSize.height )
-
-                ( wX, wY ) =
-                    ( toFloat position.x, toFloat position.y )
-
-                -- viewport geometry
-                ( vW, vH ) =
-                    ( 2, 2 )
-
-                x =
-                    vW * (wX - wW / 2) / wW
-
-                y =
-                    vH * (-wY + wH / 2) / wH
-            in
-                { model | mousePosition = vec2 x y }
+            { model | mousePosition = Viewport.mouseToViewportCoordinates model.window position }
 
         MouseButton isDown ->
             { model | mouseButton = isDown }
 
         WindowResize size ->
-            { model | windowSize = Debug.log "" size }
+            { model | window = size }
 
 
 
 -- view
 
 
-renderObstacle : Float -> Obstacle -> WebGL.Entity
-renderObstacle color obstacle =
-    let
-        uniforms =
-            { color = color
-            , transform =
-                Mat4.identity
-                    |> Mat4.translate3 (Vec2.getX obstacle.c) (Vec2.getY obstacle.c) 0
-                    |> Mat4.rotate obstacle.angle (vec3 0 0 1)
-                    |> Mat4.scale3 obstacle.w obstacle.h 1
-            }
-    in
-        Primitives.quad uniforms
-
-
 view : Model -> Html Msg
 view model =
     let
+        viewMatrix =
+            Viewport.worldToCameraMatrix model.window
+
         obstacles =
-            List.map (renderObstacle 0.3) model.obstacles
+            List.map (Obstacle.render viewMatrix 0.3) model.obstacles
     in
         [ obstacles
         ]
             |> List.concat
             |> WebGL.toHtml
-                [ Html.Attributes.width model.windowSize.width
-                , Html.Attributes.height model.windowSize.height
+                [ Html.Attributes.width model.window.width
+                , Html.Attributes.height model.window.height
                 , Html.Attributes.style
                     [ ( "width", "99vw" )
                     , ( "height", "99vh" )

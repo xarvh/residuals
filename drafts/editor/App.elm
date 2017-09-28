@@ -9,21 +9,19 @@ import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Mouse
-import Primitives
 import Task
 import Window
 import WebGL
 
 
+--
+
+import Obstacle exposing (Obstacle)
+import Primitives
+import Viewport
+
+
 -- Types
-
-
-type alias Obstacle =
-    { center : Vec2
-    , width : Float
-    , height : Float
-    , angle : Float
-    }
 
 
 type alias Drag =
@@ -216,7 +214,7 @@ update msg model =
                     { model | maybeDrag = Nothing, obstacles = drag.obstacle :: model.obstacles }
 
         MouseMove position ->
-            updateDrag { model | mousePosition = mouseToGameCoordinates model position }
+            updateDrag { model | mousePosition = Viewport.mouseToViewportCoordinates model.window position }
 
         WindowResize size ->
             { model | window = size }
@@ -247,39 +245,14 @@ update msg model =
 -- entities
 
 
-renderObstacle : Mat4 -> Float -> Obstacle -> WebGL.Entity
-renderObstacle viewMatrix color obstacle =
-    let
-        uniforms =
-            { color = color
-            , transform =
-                Mat4.identity
-                    |> Mat4.translate3 (Vec2.getX obstacle.center) (Vec2.getY obstacle.center) 0
-                    |> Mat4.rotate obstacle.angle (vec3 0 0 1)
-                    |> Mat4.scale3 obstacle.width obstacle.height 1
-                    |> Mat4.mul viewMatrix
-            }
-    in
-        Primitives.quad uniforms
-
-
 entities : Model -> List WebGL.Entity
 entities model =
     let
-        ( vW, vH ) =
-            windowSizeInGameCoordinates model
-
-        projection =
-            Mat4.makeScale3 (2 / vW) (2 / vH) 1
-
-        camera =
-            Mat4.identity
-
-        projectionAndCamera =
-            Mat4.mul projection camera
+        viewMatrix =
+            Viewport.worldToCameraMatrix model.window
 
         obstacles =
-            List.map (renderObstacle projectionAndCamera 0.3) model.obstacles
+            List.map (Obstacle.render viewMatrix 0.3) model.obstacles
 
         drag =
             case model.maybeDrag of
@@ -287,7 +260,7 @@ entities model =
                     []
 
                 Just drag ->
-                    [ renderObstacle projectionAndCamera 0.7 drag.obstacle ]
+                    [ Obstacle.render viewMatrix 0.7 drag.obstacle ]
     in
         [ obstacles
         , drag
