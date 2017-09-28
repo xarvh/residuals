@@ -27,3 +27,15 @@ rotate90 v =
             Vec2.toTuple v
     in
         vec2 -y x
+
+
+clampToLength : Float -> Vec2 -> Vec2
+clampToLength radius v =
+    let
+        ll =
+            Vec2.lengthSquared v
+    in
+        if ll <= radius * radius then
+            v
+        else
+            Vec2.scale (radius / sqrt ll) v

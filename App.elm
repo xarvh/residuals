@@ -15,6 +15,7 @@ import Time exposing (Time)
 
 import Input
 import Level0
+import Math
 import Obstacle exposing (Obstacle)
 import Primitives
 import Viewport
@@ -25,6 +26,7 @@ import Viewport
 
 type alias Hero =
     { position : Vec2
+    , velocity : Vec2
     }
 
 
@@ -58,6 +60,7 @@ init =
             , input = Input.init
             , hero =
                 { position = vec2 0 0
+                , velocity = vec2 0 0
                 }
             }
 
@@ -73,7 +76,35 @@ init =
 
 updateHero : Time -> Input.State -> List Obstacle -> Hero -> Hero
 updateHero dt inputState obstacles hero =
-    hero
+    let
+        thrust =
+            0.000004
+
+        gravity =
+          thrust / 2
+
+        drag =
+          0.03
+
+        thrustAcceleration =
+            inputState.move
+                |> Math.clampToLength 1.0
+                |> Vec2.scale thrust
+
+        gravityAcceleration =
+          vec2 0 -gravity
+
+        a =
+          Vec2.add gravityAcceleration thrustAcceleration
+
+        newVelocity =
+          Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
+
+
+        newPosition =
+            Vec2.add hero.position (Vec2.scale dt newVelocity)
+    in
+        { hero | position = newPosition, velocity = newVelocity}
 
 
 updateFrame : Time -> Model -> Model
@@ -104,11 +135,12 @@ update msg model =
 
 -- view
 
+
 renderHero : Mat4 -> Hero -> WebGL.Entity
 renderHero viewMatrix hero =
     let
         size =
-          0.04
+            0.04
 
         uniforms =
             { color = 0
@@ -123,8 +155,6 @@ renderHero viewMatrix hero =
         Primitives.icosagon uniforms
 
 
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -132,13 +162,13 @@ view model =
             Viewport.worldToCameraMatrix model.viewport
 
         hero =
-          renderHero viewMatrix model.hero
+            renderHero viewMatrix model.hero
 
         obstacles =
             List.map (Obstacle.render viewMatrix 0.3) model.obstacles
     in
         [ obstacles
-        , [hero]
+        , [ hero ]
         ]
             |> List.concat
             |> WebGL.toHtml
