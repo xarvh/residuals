@@ -16,6 +16,7 @@ import WebGL
 
 --
 
+import Level0
 import Obstacle exposing (Obstacle)
 import Primitives
 import Viewport
@@ -54,13 +55,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         model =
-            { obstacles =
-                [ { center = vec2 0 0
-                  , angle = 0
-                  , width = 0.5
-                  , height = 0.1
-                  }
-                ]
+            { obstacles = Level0.obstacles
             , maybeDrag = Nothing
             , window =
                 { width = 100

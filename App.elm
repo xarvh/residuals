@@ -2,6 +2,7 @@ module App exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes
+import Keyboard.Extra exposing (Key)
 import List.Extra
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
@@ -28,6 +29,7 @@ type alias Model =
     , window : Window.Size
     , mousePosition : Vec2
     , mouseButton : Bool
+    , pressedKeys : List Key
     }
 
 
@@ -49,6 +51,7 @@ init =
             , window = { width = 100, height = 100 }
             , mousePosition = vec2 0 0
             , mouseButton = False
+            , pressedKeys = []
             }
 
         cmd =
