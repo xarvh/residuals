@@ -68,13 +68,13 @@ trisVertices =
             -right
 
         a =
-            vec3 top center 0
+            vec3 center top 0
 
         b =
-            vec3 bottom right 0
+            vec3 right bottom 0
 
         c =
-            vec3 bottom left 0
+            vec3 left bottom 0
     in
         [ MeshVertex a
         , MeshVertex b
