@@ -35,8 +35,9 @@ type alias Drag =
 type alias Model =
     { obstacles : List Obstacle
     , maybeDrag : Maybe Drag
-    , windowSize : Window.Size
     , mousePosition : Vec2
+    , windowSize : Window.Size
+    , viewMatrix : Mat4
     }
 
 
@@ -66,6 +67,7 @@ init =
             , maybeDrag = Nothing
             , windowSize = { width = 100, height = 100 }
             , mousePosition = vec2 0 0
+            , viewMatrix = Mat4.identity
             }
 
         cmd =
@@ -186,7 +188,15 @@ update msg model =
                 updateDrag { model | mousePosition = vec2 x y }
 
         WindowResize size ->
-            { model | windowSize = Debug.log "" size }
+          let
+              w = toFloat size.width
+              h = toFloat size.height
+
+              viewMatrix =
+                Mat4.identity
+                  |> Mat4.scale3 (h/w) 1 1
+          in
+            { model | windowSize = size, viewMatrix = viewMatrix }
 
         OnKeyboard code ->
             case Char.fromCode code of
@@ -210,16 +220,18 @@ update msg model =
 -- view
 
 
-renderObstacle : Float -> Obstacle -> WebGL.Entity
-renderObstacle color obstacle =
+renderObstacle : Mat4 -> Float -> Obstacle -> WebGL.Entity
+renderObstacle viewMatrix color obstacle =
     let
         uniforms =
             { color = color
             , transform =
                 Mat4.identity
                     |> Mat4.translate3 (Vec2.getX obstacle.center) (Vec2.getY obstacle.center) 0
-                    |> Mat4.scale3 obstacle.width obstacle.height 1
                     |> Mat4.rotate obstacle.angle (vec3 0 0 1)
+                    |> Mat4.scale3 obstacle.width obstacle.height 1
+                    |> Mat4.mul viewMatrix
+
             }
     in
         Primitives.quad uniforms
@@ -229,7 +241,7 @@ view : Model -> Html Msg
 view model =
     let
         obstacles =
-            List.map (renderObstacle 0.3) model.obstacles
+            List.map (renderObstacle model.viewMatrix 0.3) model.obstacles
 
         drag =
             case model.maybeDrag of
@@ -237,7 +249,7 @@ view model =
                     []
 
                 Just drag ->
-                    [ renderObstacle 0.7 drag.obstacle ]
+                    [ renderObstacle model.viewMatrix 0.7 drag.obstacle ]
     in
         [ obstacles
         , drag
