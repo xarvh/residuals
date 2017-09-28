@@ -24,24 +24,17 @@ type alias Obstacle =
     }
 
 
-type alias Drag =
-    { offset : Vec2
-    , obstacle : Obstacle
-    }
-
-
 type alias Model =
     { obstacles : List Obstacle
-    , maybeDrag : Maybe Drag
     , windowSize : Window.Size
     , mousePosition : Vec2
+    , mouseButton : Bool
     }
 
 
 type Msg
-    = DragStart
-    | DragStop
-    | MouseMove Mouse.Position
+    = MouseMove Mouse.Position
+    | MouseButton Bool
     | WindowResize Window.Size
 
 
@@ -49,20 +42,22 @@ type Msg
 -- init
 
 
+obs =
+    [ { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 -0.5 0 }
+    , { angle = turns 0.25, w = 0.5, h = 0.1, c = vec2 0.5 0.25 }
+--     , { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 0 0 }
+--     , { angle = turns 0.00, w = 0.5, h = 0.1, c = vec2 0 0 }
+    ]
+
+
 init : ( Model, Cmd Msg )
 init =
     let
         model =
-            { obstacles =
-                [ { c = vec2 0 0
-                  , angle = 0
-                  , w = 0.5
-                  , h = 0.1
-                  }
-                ]
-            , maybeDrag = Nothing
+            { obstacles = obs
             , windowSize = { width = 100, height = 100 }
             , mousePosition = vec2 0 0
+            , mouseButton = False
             }
 
         cmd =
@@ -75,67 +70,9 @@ init =
 -- update
 
 
-updateDrag : Model -> Model
-updateDrag model =
-    case model.maybeDrag of
-        Nothing ->
-            model
-
-        Just drag ->
-            let
-                oldObstacle =
-                    drag.obstacle
-
-                newObstacle =
-                    { oldObstacle | c = model.mousePosition }
-
-                newDrag =
-                    { drag | obstacle = newObstacle }
-            in
-                { model | maybeDrag = Just newDrag }
-
-
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        DragStart ->
-            case model.maybeDrag of
-                Just _ ->
-                    model
-
-                Nothing ->
-                    let
-                        maybeObstacle =
-                            model.obstacles
-                                |> List.map (\o -> ( o, Vec2.distance o.c model.mousePosition ))
-                                |> List.Extra.minimumBy Tuple.second
-                                |> Maybe.map Tuple.first
-                    in
-                        case maybeObstacle of
-                            Nothing ->
-                                model
-
-                            Just obstacle ->
-                                let
-                                    drag =
-                                        { obstacle = obstacle
-                                        , offset = vec2 0 0
-                                        }
-
-                                    obstacles =
-                                        model.obstacles
-                                            |> List.filter (\o -> o /= obstacle)
-                                in
-                                    { model | maybeDrag = Just drag, obstacles = obstacles }
-
-        DragStop ->
-            case model.maybeDrag of
-                Nothing ->
-                    model
-
-                Just drag ->
-                    { model | maybeDrag = Nothing, obstacles = drag.obstacle :: model.obstacles }
-
         MouseMove position ->
             let
                 -- window geometry
@@ -147,7 +84,7 @@ update msg model =
 
                 -- viewport geometry
                 ( vW, vH ) =
-                    ( 1, 1 )
+                    ( 2, 2 )
 
                 x =
                     vW * (wX - wW / 2) / wW
@@ -155,10 +92,13 @@ update msg model =
                 y =
                     vH * (-wY + wH / 2) / wH
             in
-                updateDrag { model | mousePosition = vec2 x y }
+                { model | mousePosition = vec2 x y }
+
+        MouseButton isDown ->
+            { model | mouseButton = isDown }
 
         WindowResize size ->
-            { model | windowSize = size }
+            { model | windowSize = Debug.log "" size }
 
 
 
@@ -185,22 +125,17 @@ view model =
     let
         obstacles =
             List.map (renderObstacle 0.3) model.obstacles
-
-        drag =
-            case model.maybeDrag of
-                Nothing ->
-                    []
-
-                Just drag ->
-                    [ renderObstacle 0.7 drag.obstacle ]
     in
         [ obstacles
-        , drag
         ]
             |> List.concat
             |> WebGL.toHtml
                 [ Html.Attributes.width model.windowSize.width
                 , Html.Attributes.height model.windowSize.height
+                , Html.Attributes.style
+                    [ ( "width", "99vw" )
+                    , ( "height", "99vh" )
+                    ]
                 ]
 
 
@@ -211,8 +146,8 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Mouse.downs (always DragStart)
-        , Mouse.ups (always DragStop)
+        [ Mouse.downs (\_ -> MouseButton True)
+        , Mouse.ups (\_ -> MouseButton False)
         , Mouse.moves MouseMove
         , Window.resizes WindowResize
         ]
