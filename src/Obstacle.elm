@@ -8,6 +8,7 @@ import WebGL
 
 --
 
+import Math
 import Primitives
 
 
@@ -20,6 +21,20 @@ type alias Obstacle =
     , height : Float
     , angle : Float
     }
+
+
+vertices : Obstacle -> List Vec2
+vertices obstacle =
+    let
+        transform =
+            Mat4.identity
+                |> Mat4.translate3 (Vec2.getX obstacle.center) (Vec2.getY obstacle.center) 0
+                |> Mat4.rotate obstacle.angle (vec3 0 0 1)
+                |> Mat4.scale3 obstacle.width obstacle.height 1
+    in
+        Primitives.quadVertices
+            |> List.map (Mat4.transform transform)
+            |> List.map (\v -> vec2 (Vec3.getX v) (Vec3.getY v))
 
 
 render : Mat4 -> Float -> Obstacle -> WebGL.Entity

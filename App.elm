@@ -13,12 +13,21 @@ import Time exposing (Time)
 
 --
 
+import Collision
 import Input
 import Level0
 import Math
 import Obstacle exposing (Obstacle)
 import Primitives
 import Viewport
+
+
+-- Globals
+
+
+heroRadius =
+    0.04
+
 
 
 -- Types
@@ -74,6 +83,31 @@ init =
 -- update
 
 
+obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe Vec2
+obsHeroCollision start end o =
+    let
+        ( a, b, c, d ) =
+            case Obstacle.vertices o of
+                [ a, b, c, d ] ->
+                    ( a, b, c, d )
+
+                _ ->
+                    Debug.crash "vertices"
+    in
+        --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
+        [ ( a, b ) ]
+            |> List.filterMap (\t -> Collision.collision heroRadius t ( start, end ))
+            |> List.head
+
+
+heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Vec2
+heroCollisions c d obstacles =
+    obstacles
+        |> List.filterMap (obsHeroCollision c d)
+        |> List.head
+        |> Maybe.withDefault d
+
+
 updateHero : Time -> Input.State -> List Obstacle -> Hero -> Hero
 updateHero dt inputState obstacles hero =
     let
@@ -81,10 +115,10 @@ updateHero dt inputState obstacles hero =
             0.000004
 
         gravity =
-          thrust / 2
+            thrust / 2
 
         drag =
-          0.03
+            0.03
 
         thrustAcceleration =
             inputState.move
@@ -92,19 +126,21 @@ updateHero dt inputState obstacles hero =
                 |> Vec2.scale thrust
 
         gravityAcceleration =
-          vec2 0 -gravity
+            vec2 0 -gravity
 
         a =
-          Vec2.add gravityAcceleration thrustAcceleration
+            Vec2.add gravityAcceleration thrustAcceleration
 
         newVelocity =
-          Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
-
+            Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
 
         newPosition =
             Vec2.add hero.position (Vec2.scale dt newVelocity)
+
+        fixedPosition =
+            heroCollisions hero.position newPosition obstacles
     in
-        { hero | position = newPosition, velocity = newVelocity}
+        { hero | position = fixedPosition, velocity = newVelocity }
 
 
 updateFrame : Time -> Model -> Model
@@ -140,7 +176,7 @@ renderHero : Mat4 -> Hero -> WebGL.Entity
 renderHero viewMatrix hero =
     let
         size =
-            0.04
+            heroRadius
 
         uniforms =
             { color = 0
@@ -153,6 +189,34 @@ renderHero viewMatrix hero =
             }
     in
         Primitives.icosagon uniforms
+
+
+
+{-
+   ro viewMatrix obstacle =
+       let
+           vertices =
+               Obstacle.vertices obstacle
+                 |> List.drop 1
+                 |> List.take 2
+
+           mesh =
+               WebGL.points [ Primitives.MeshVertex (vec3 0 0 0) ]
+
+           renderVertex v =
+               let
+                   uniforms =
+                       { transform =
+                           Mat4.identity
+                               |> Mat4.translate3 (Vec2.getX v) (Vec2.getY v) 0
+                               |> Mat4.mul viewMatrix
+                       , color = 0
+                       }
+               in
+                   WebGL.entity Primitives.vertexShader Primitives.fragmentShader mesh uniforms
+       in
+           List.map renderVertex vertices
+-}
 
 
 view : Model -> Html Msg

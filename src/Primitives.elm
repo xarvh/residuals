@@ -49,7 +49,7 @@ fragmentShader =
 -- Tris
 
 
-trisVertices : List MeshVertex
+trisVertices : List Vec3
 trisVertices =
     let
         top =
@@ -76,15 +76,14 @@ trisVertices =
         c =
             vec3 left bottom 0
     in
-        [ MeshVertex a
-        , MeshVertex b
-        , MeshVertex c
-        ]
+        [ a, b, c ]
 
 
 trisMesh : Mesh MeshVertex
 trisMesh =
-    WebGL.triangleFan trisVertices
+    trisVertices
+        |> List.map MeshVertex
+        |> WebGL.triangleFan
 
 
 tris : Uniforms -> WebGL.Entity
@@ -96,7 +95,7 @@ tris uniforms =
 -- Quad
 
 
-quadVertices : List MeshVertex
+quadVertices : List Vec3
 quadVertices =
     let
         half =
@@ -115,27 +114,25 @@ quadVertices =
             -half
 
         a =
-            vec3 top left 0
+            vec3 left top 0
 
         b =
-            vec3 top right 0
+            vec3 right top 0
 
         c =
-            vec3 bottom right 0
+            vec3 right bottom 0
 
         d =
-            vec3 bottom left 0
+            vec3 left bottom 0
     in
-        [ MeshVertex a
-        , MeshVertex b
-        , MeshVertex c
-        , MeshVertex d
-        ]
+        [ a, b, c, d ]
 
 
 quadMesh : Mesh MeshVertex
 quadMesh =
-    WebGL.triangleFan quadVertices
+    quadVertices
+        |> List.map MeshVertex
+        |> WebGL.triangleFan
 
 
 quad : Uniforms -> WebGL.Entity
@@ -147,7 +144,7 @@ quad uniforms =
 -- Icosagon
 
 
-icosagonVertices : List MeshVertex
+icosagonVertices : List Vec3
 icosagonVertices =
     let
         n =
@@ -170,12 +167,14 @@ icosagonVertices =
         fan =
             vec3 0 0 0 :: perimeter
     in
-        List.map MeshVertex fan
+        fan
 
 
 icosagonMesh : Mesh MeshVertex
 icosagonMesh =
-    WebGL.triangleFan icosagonVertices
+    icosagonVertices
+        |> List.map MeshVertex
+        |> WebGL.triangleFan
 
 
 icosagon : Uniforms -> WebGL.Entity
