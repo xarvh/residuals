@@ -83,7 +83,7 @@ init =
 -- update
 
 
-obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe Vec2
+obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe ( Vec2, Vec2 )
 obsHeroCollision start end o =
     let
         ( a, b, c, d ) =
@@ -100,19 +100,18 @@ obsHeroCollision start end o =
             |> List.head
 
 
-heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Vec2
+heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Maybe ( Vec2, Vec2 )
 heroCollisions c d obstacles =
     obstacles
         |> List.filterMap (obsHeroCollision c d)
         |> List.head
-        |> Maybe.withDefault d
 
 
 updateHero : Time -> Input.State -> List Obstacle -> Hero -> Hero
 updateHero dt inputState obstacles hero =
     let
         thrust =
-            0.000004
+            0.000001
 
         gravity =
             thrust / 2
@@ -137,10 +136,21 @@ updateHero dt inputState obstacles hero =
         newPosition =
             Vec2.add hero.position (Vec2.scale dt newVelocity)
 
-        fixedPosition =
+        maybeFix =
             heroCollisions hero.position newPosition obstacles
+
+        ( fixedPosition, fixedVelocity ) =
+            case maybeFix of
+                Nothing ->
+                    ( newPosition, newVelocity )
+
+                Just ( surface, fixedPosition ) ->
+                    ( fixedPosition
+                      -- remove velocity component perpendicular to the surface
+                    , Vec2.scale (Vec2.dot newVelocity surface) surface
+                    )
     in
-        { hero | position = fixedPosition, velocity = newVelocity }
+        { hero | position = fixedPosition, velocity = fixedVelocity }
 
 
 updateFrame : Time -> Model -> Model
@@ -231,18 +241,21 @@ view model =
         obstacles =
             List.map (Obstacle.render viewMatrix 0.3) model.obstacles
     in
-        [ obstacles
-        , [ hero ]
-        ]
-            |> List.concat
-            |> WebGL.toHtml
-                [ Html.Attributes.width model.viewport.width
-                , Html.Attributes.height model.viewport.height
-                , Html.Attributes.style
-                    [ ( "width", "99vw" )
-                    , ( "height", "99vh" )
-                    ]
+        Html.div
+            []
+            [ Html.node "style"
+                []
+                [ Html.text "html,head,body { padding:0; margin:0; }"
                 ]
+            , [ obstacles
+              , [ hero ]
+              ]
+                |> List.concat
+                |> WebGL.toHtml
+                    [ Html.Attributes.width model.viewport.width
+                    , Html.Attributes.height model.viewport.height
+                    ]
+            ]
 
 
 

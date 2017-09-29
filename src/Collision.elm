@@ -54,13 +54,13 @@ We use a reference frame where AB is horizontal:
 
 We can exclude collision if any of these conditions is true:
 
-  - C is below AB (*no* adjustment for radius)
+  - D is above C (*no* adjustment for radius)
   - D is above AB (adjust for radius)
   - I is left of A (adjust for radius)
   - I is right of B (adjust for radius)
 
 -}
-collision : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe Vec2
+collision : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
 collision r ( a, b ) ( c, d ) =
     if a == b || c == d then
         Nothing
@@ -92,8 +92,13 @@ collision r ( a, b ) ( c, d ) =
             ( dX, dY ) =
                 xy d
         in
-            if cY <= aY then
+            -- starting position is already past the surface
+            if cY < aY then
                 Nothing
+                -- surface should only block movement opposite to its normal
+            else if dY >= cY then
+                Nothing
+                -- object will already stop before colliding
             else if dY - r >= aY then
                 Nothing
             else
@@ -116,4 +121,6 @@ collision r ( a, b ) ( c, d ) =
                     else if iX - r > bX then
                         Nothing
                     else
-                        Vec2.add (Vec2.scale fX x) (Vec2.scale fY y) |> Just
+                        Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
+                            |> (,) x
+                            |> Just
