@@ -21,7 +21,13 @@ segmentToBase a b =
     Vec2.sub b a |> vecToBase
 
 
-{-| Checks if a trajectory collides with an oriented surface.
+{-| -}
+pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
+pointToPoint r a ( c, d ) =
+    Nothing
+
+
+{-| Checks if a trajectory collides with an oriented segment.
 If so, it returns a fixed final position for the trajectory.
 
 Arguments:
@@ -60,8 +66,8 @@ We can exclude collision if any of these conditions is true:
   - I is right of B (adjust for radius)
 
 -}
-collision : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
-collision r ( a, b ) ( c, d ) =
+pointToSegment : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
+pointToSegment r ( a, b ) ( c, d ) =
     if a == b || c == d then
         Nothing
     else
@@ -79,7 +85,7 @@ collision r ( a, b ) ( c, d ) =
                 ( Vec2.dot x p, Vec2.dot y p )
 
             -- point components along the base
-            -- TODO: not all of these are needed
+            -- TODO: not all of these are needed before the checks
             ( aX, aY ) =
                 xy a
 
@@ -92,10 +98,10 @@ collision r ( a, b ) ( c, d ) =
             ( dX, dY ) =
                 xy d
         in
-            -- starting position is already past the surface
+            -- starting position is already past the segment
             if cY < aY then
                 Nothing
-                -- surface should only block movement opposite to its normal
+                -- segment should only block movement opposite to its oriented normal
             else if dY >= cY then
                 Nothing
                 -- object will already stop before colliding
@@ -103,24 +109,32 @@ collision r ( a, b ) ( c, d ) =
                 Nothing
             else
                 let
-                    -- intersection point
+                    -- intersection point between the trajectory of the bottom of the sphere
+                    -- and the stright line that contains the segment
                     iY =
-                        aY
+                        aY + r
 
                     iX =
-                        (dX - cX) / (dY - cY) * (aY - cY) + cX
-
-                    fX =
-                        dX
-
-                    fY =
-                        aY + r
+                        (dX - cX) / (dY - cY) * (iY - cY) + cX
                 in
-                    if iX + r < aX then
-                        Nothing
-                    else if iX - r > bX then
-                        Nothing
+                    -- intersection is outside and left of the segment
+                    if iX < aX then
+                        pointToPoint r a ( c, d )
+                        -- intersection is outside and right of the segment
+                    else if iX > bX then
+                        pointToPoint r b ( c, d )
+                        -- intersection is within the segment
                     else
-                        Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
-                            |> (,) x
-                            |> Just
+                        let
+                            fX =
+                                dX
+
+                            fY =
+                                iY
+
+                            q =
+                                Debug.log "" ( a, b )
+                        in
+                            Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
+                                |> (,) x
+                                |> Just
