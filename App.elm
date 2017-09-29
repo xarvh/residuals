@@ -176,7 +176,7 @@ renderHero : Mat4 -> Hero -> WebGL.Entity
 renderHero viewMatrix hero =
     let
         size =
-            heroRadius
+            heroRadius * 2
 
         uniforms =
             { color = 0
