@@ -40,14 +40,14 @@ The math becomes much easier if we resolve it in a coordinate system where:
 
   - a is at the origin
 
+```
            ^
            |
     c --s1---s2-----------------> d
            |
            |
-           |
-           |
            a----------------------------->
+```
 
 Equation for cd:
 
@@ -64,47 +64,73 @@ The above have solutions:
 
 Which means that collisions happen if and only if
 
-    r^2 > cY^2
+    r^2 - cY^2 > 0
 
 Also, if solutions are present, we can take the one with the negative sign, as it is the one
 closer to the trajectory start.
 
+
+
+
+
+
+Constraints
+===========
+
+* "Object should not jump" => CD should be longer than CS
+
+* "Object should stop at R distance from the point" => SA should be roughly equal to R
+
+* S should lay within C and D
+
+
+
+
+
 -}
 pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
 pointToPoint r a___ ( c___, d___ ) =
-    let
-        a_ =
-          vec2 0 0
+    if c___ == d___ then
+        Nothing
+    else
+        let
+            a_ =
+                vec2 0 0
 
-        c_ =
-           Vec2.sub c___ a___
+            c_ =
+                Vec2.sub c___ a___
 
-        d_ =
-           Vec2.sub d___ a___
+            d_ =
+                Vec2.sub d___ a___
 
+            -- coordinate transform: cd is horizontal
+            x =
+                Vec2.sub d_ c_ |> Vec2.normalize
 
-        -- coordinate transform: cd is horizontal
-        x =
-            Vec2.sub d_ c_ |> Vec2.normalize
+            y =
+                Math.rotate90 x
 
-        y =
-            Math.rotate90 x
+            changeBase v =
+                vec2 (Vec2.dot v x) (Vec2.dot v y)
 
-        changeBase v =
-          vec2 (Vec2.dot v x) (Vec2.dot v y)
+            -- new points
+            a =
+                changeBase a_
 
-        -- new points
-        a = changeBase a_
+            c =
+                changeBase c_
 
-        c = changeBase c_
+            d =
+                changeBase d_
 
-        d = changeBase d_
+            -- cY
+            cY =
+                Vec2.getY c
 
-        -- cY
-        cY =
-            Vec2.getY c
-    in
-        if r * r <= cY * cY then
+            determinant =
+                r * r - cY * cY
+        in
+        if determinant <= 0 then
             Nothing
         else
             let
@@ -117,14 +143,17 @@ pointToPoint r a___ ( c___, d___ ) =
 
                 -- transform the solution coordinates
                 s_ =
-                  Vec2.add (Vec2.scale sX x) (Vec2.scale sY y)
+                    Vec2.add (Vec2.scale sX x) (Vec2.scale sY y)
 
                 s___ =
-                     Vec2.add s_ a___
+                    Vec2.add s_ a___
 
                 normal =
                     Vec2.sub s___ a___ |> Vec2.normalize
             in
+            if sX < Vec2.getX c || sX > Vec2.getX d then
+                Nothing
+            else
                 Just
                     { normal = normal
                     , parallel = Math.rotate90 normal
@@ -139,7 +168,7 @@ Arguments:
 
 *) r: collision radius
 
-*) a, b: *oriented* obstacle segment.
+_) a, b: _oriented* obstacle segment.
 
     - Collision will happen only if the collider comes from the left side of the segment direction
     - a and b are assumed to be different
@@ -165,7 +194,7 @@ We use a reference frame where AB is horizontal:
 
 We can exclude collision if any of these conditions is true:
 
-  - D is above C (*no* adjustment for radius)
+  - D is above C (_no_ adjustment for radius)
   - D is above AB (adjust for radius)
   - I is left of A (adjust for radius)
   - I is right of B (adjust for radius)
@@ -203,42 +232,35 @@ pointToSegment r ( a, b ) ( c, d ) =
             ( dX, dY ) =
                 xy d
         in
-            -- starting position is already past the segment
-            if cY < aY then
-                Nothing
-                -- segment should only block movement opposite to its oriented normal
-            else if dY >= cY then
-                Nothing
-                -- object will already stop before colliding
-            else if dY - r >= aY then
-                Nothing
+        -- starting position is already past the segment
+        if cY < aY then
+            Nothing
+            -- segment should only block movement opposite to its oriented normal
+        else if dY >= cY then
+            Nothing
+            -- object will already stop before colliding
+        else if dY - r >= aY then
+            Nothing
+        else
+            let
+                -- intersection point between the trajectory of the bottom of the sphere
+                -- and the stright line that contains the segment
+                iY =
+                    aY + r
+
+                iX =
+                    (dX - cX) / (dY - cY) * (iY - cY) + cX
+            in
+            if iX < aX then
+                -- intersection is outside and left of the segment
+                pointToPoint r a ( c, d )
+            else if iX > bX then
+                -- intersection is outside and right of the segment
+                pointToPoint r b ( c, d )
             else
-                let
-                    -- intersection point between the trajectory of the bottom of the sphere
-                    -- and the stright line that contains the segment
-                    iY =
-                        aY + r
-
-                    iX =
-                        (dX - cX) / (dY - cY) * (iY - cY) + cX
-                in
-                    -- intersection is outside and left of the segment
-                    if iX < aX then
-                        pointToPoint r a ( c, d )
-                        -- intersection is outside and right of the segment
-                    else if iX > bX then
-                        pointToPoint r b ( c, d )
-                        -- intersection is within the segment
-                    else
-                        let
-                            fX =
-                                dX
-
-                            fY =
-                                iY
-                        in
-                            Just
-                                { normal = y
-                                , parallel = x
-                                , position = Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
-                                }
+                -- intersection is within the segment
+                Just
+                    { normal = y
+                    , parallel = x
+                    , position = Vec2.add (Vec2.scale iX x) (Vec2.scale iY y)
+                    }

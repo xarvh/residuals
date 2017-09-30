@@ -1,25 +1,23 @@
 module App exposing (..)
 
-import AnimationFrame
-import Html exposing (Html)
-import Html.Attributes
-import List.Extra
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
-import Math.Matrix4 as Mat4 exposing (Mat4)
-import WebGL
-import Time exposing (Time)
-
-
 --
 
+import AnimationFrame
 import Collision exposing (Collision)
+import Html exposing (Html)
+import Html.Attributes
 import Input
 import Level0
+import List.Extra
 import Math
+import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector2 as Vec2 exposing (Vec2, vec2)
+import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Obstacle exposing (Obstacle)
 import Primitives
+import Time exposing (Time)
 import Viewport
+import WebGL
 
 
 -- Globals
@@ -82,7 +80,7 @@ init =
         cmd =
             viewportCmd |> Cmd.map ViewportMsg
     in
-        ( model, cmd )
+    ( model, cmd )
 
 
 
@@ -100,10 +98,10 @@ obsHeroCollision start end o =
                 _ ->
                     Debug.crash "vertices"
     in
-        --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
-        [ ( a, b ) ]
-            |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
-            |> List.head
+    --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
+    [ ( a, b ) ]
+        |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
+        |> List.head
 
 
 heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Maybe Collision
@@ -147,27 +145,26 @@ updateHero dt inputState obstacles hero =
             heroCollisions hero.position newPosition obstacles
 
         ( fixedPosition, fixedVelocity ) =
-            ( newPosition, newVelocity )
+            case maybeCollision of
+                Nothing ->
+                    ( newPosition, newVelocity )
 
-        --             case maybeCollision of
-        --                 Nothing ->
-        --
-        --                 Just collision ->
-        --                     ( newPosition, newVelocity, Nothing )
-        --                     ( collision.position
-        --                       -- remove velocity component perpendicular to the surface
-        --                     , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
-        --                     )
+                Just collision ->
+--                     ( newPosition, newVelocity )
+                    ( collision.position
+                      -- remove velocity component perpendicular to the surface
+                    , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
+                    )
     in
-        { hero
-            | position = fixedPosition
-            , velocity = fixedVelocity
-            , maybeCollision =
-                if maybeCollision == Nothing then
-                    hero.maybeCollision
-                else
-                    maybeCollision
-        }
+    { hero
+        | position = fixedPosition
+        , velocity = fixedVelocity
+        , maybeCollision =
+            if maybeCollision == Nothing then
+                hero.maybeCollision
+            else
+                maybeCollision
+    }
 
 
 updateFrame : Time -> Model -> Model
@@ -179,7 +176,7 @@ updateFrame dt model =
         inputState =
             Input.keyboardAndMouseInputState model.input transformMouseCoordinates
     in
-        { model | hero = updateHero dt inputState model.obstacles model.hero }
+    { model | hero = updateHero dt inputState model.obstacles model.hero }
 
 
 update : Msg -> Model -> Model
@@ -233,19 +230,19 @@ renderHero viewMatrix hero =
                         p =
                             Vec2.add collision.position (Vec2.scale 0.03 collision.normal)
                       in
-                        Primitives.tris
-                            { color = 0.5
-                            , transform =
-                                Mat4.identity
-                                    |> Mat4.translate3 (Vec2.getX p) (Vec2.getY p) -1
-                                    |> Mat4.scale3 0.01 0.01 1
-                                    |> Mat4.mul viewMatrix
-                            }
+                      Primitives.tris
+                        { color = 0.5
+                        , transform =
+                            Mat4.identity
+                                |> Mat4.translate3 (Vec2.getX p) (Vec2.getY p) -1
+                                |> Mat4.scale3 0.01 0.01 1
+                                |> Mat4.mul viewMatrix
+                        }
                     ]
     in
-        [ Primitives.icosagon uniforms
-        ]
-            ++ coll
+    [ Primitives.icosagon uniforms
+    ]
+        ++ coll
 
 
 
@@ -288,21 +285,21 @@ view model =
         obstacles =
             List.map (Obstacle.render viewMatrix 0.3) model.obstacles
     in
-        Html.div
+    Html.div
+        []
+        [ Html.node "style"
             []
-            [ Html.node "style"
-                []
-                [ Html.text "html,head,body { padding:0; margin:0; }"
-                ]
-            , [ obstacles
-              , hero
-              ]
-                |> List.concat
-                |> WebGL.toHtml
-                    [ Html.Attributes.width model.viewport.width
-                    , Html.Attributes.height model.viewport.height
-                    ]
+            [ Html.text "html,head,body { padding:0; margin:0; }"
             ]
+        , [ obstacles
+          , hero
+          ]
+            |> List.concat
+            |> WebGL.toHtml
+                [ Html.Attributes.width model.viewport.width
+                , Html.Attributes.height model.viewport.height
+                ]
+        ]
 
 
 

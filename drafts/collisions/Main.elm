@@ -2,21 +2,39 @@ module Main exposing (..)
 
 import Collision
 import Dict exposing (Dict)
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events
+import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 
 
--- content
+-- init
 
 
-origin =
-    { name = "+"
-    , x = 0
-    , y = 0
+init =
+    { radius = 0.4
+    , points =
+        [ { name = "A"
+          , x = -0.6678766012191772 - 0.5 / 2
+          , y = -0.44464609026908875 + 0.1 / 2
+          }
+        , { name = "B"
+          , x = -0.6678766012191772 + 0.5 / 2
+          , y = -0.44464609026908875 + 0.1 / 2
+          }
+        , { name = "C"
+          , x = -1.2330782413482666
+          , y = -0.05903274938464165
+          }
+        , { name = "D"
+          , x = -1.234329104423523
+          , y = -0.05910038575530052
+          }
+        ]
+            |> List.map (\p -> ( p.name, p ))
+            |> Dict.fromList
     }
 
 
@@ -26,21 +44,41 @@ draw radius aa bb cc dd =
         ( a, b, c, d ) =
             ( p2v aa, p2v bb, p2v cc, p2v dd )
 
+        maybeCollision =
+            Collision.pointToSegment radius ( a, b ) ( c, d )
+            --Collision.pointToPoint radius b ( c, d )
+
         fix =
-            Collision.collision radius ( a, b ) ( c, d )
-                |> Maybe.map (v2p >> drawCircle radius)
-                |> Maybe.withDefault (text "")
+            case maybeCollision of
+                Nothing ->
+                    []
+
+                Just collision ->
+                    let
+                        p =
+                            collision.position |> v2p
+
+                        n1 =
+                            Vec2.add collision.position (Vec2.scale 0.1 collision.normal) |> v2p
+
+                        n2 =
+                            Vec2.add collision.position (Vec2.scale 0.1 collision.parallel) |> v2p
+                    in
+                    [ drawSegment p n1
+                    , drawSegment p n2
+                    , drawCircle radius p
+                    ]
     in
-        [ drawSegment aa bb
-        , drawSegment cc dd
-        , drawPoint aa
-        , drawPoint bb
-        , drawPoint cc
-        , drawPoint dd
-        , drawCircle radius cc
-        , drawCircle radius dd
-        , fix
-        ]
+    [ drawSegment aa bb
+    , drawSegment cc dd
+    , drawPoint aa
+    , drawPoint bb
+    , drawPoint cc
+    , drawPoint dd
+    , drawCircle radius cc
+    , drawCircle radius dd
+    ]
+        ++ fix
 
 
 
@@ -95,20 +133,20 @@ drawPoint p =
         size =
             0.01
     in
-        S.g
-            []
-            [ S.circle
-                [ SA.cx <| toString <| p.x
-                , SA.cy <| toString <| p.y
-                , SA.r <| toString <| size
-                ]
-                []
-            , S.text_
-                [ SA.fontSize "0.05"
-                , SA.transform <| "translate(" ++ toString (p.x + size) ++ "," ++ toString p.y ++ ") scale(1, -1)"
-                ]
-                [ text <| " " ++ p.name ]
+    S.g
+        []
+        [ S.circle
+            [ SA.cx <| toString <| p.x
+            , SA.cy <| toString <| p.y
+            , SA.r <| toString <| size
             ]
+            []
+        , S.text_
+            [ SA.fontSize "0.05"
+            , SA.transform <| "translate(" ++ toString (p.x + size) ++ "," ++ toString p.y ++ ") scale(1, -1)"
+            ]
+            [ text <| " " ++ p.name ]
+        ]
 
 
 entitiesView : Model -> List (Svg msg)
@@ -117,12 +155,12 @@ entitiesView model =
         get s =
             Dict.get s model.points
     in
-        case Maybe.map4 (draw model.radius) (get "A") (get "B") (get "C") (get "D") of
-            Just entities ->
-                entities
+    case Maybe.map4 (draw model.radius) (get "A") (get "B") (get "C") (get "D") of
+        Just entities ->
+            entities
 
-            Nothing ->
-                Debug.crash <| "WTF" ++ (toString model.points)
+        Nothing ->
+            Debug.crash <| "WTF" ++ toString model.points
 
 
 
@@ -156,33 +194,6 @@ type Msg
 
 
 
--- init
-
-
-init =
-    [ { name = "A"
-      , x = -0.1
-      , y = -0.1
-      }
-    , { name = "B"
-      , x = 0.6
-      , y = 0.4
-      }
-    , { name = "C"
-      , x = -0.2
-      , y = 0.5
-      }
-    , { name = "D"
-      , x = 0.5
-      , y = 0.23
-      }
-    ]
-        |> List.map (\p -> ( p.name, p ))
-        |> Dict.fromList
-        |> Model 0.01
-
-
-
 -- update
 
 
@@ -203,7 +214,7 @@ update msg model =
                     { model | points = Dict.insert pointName (updatePoint coordinate valueAsFloat point) model.points }
 
                 _ ->
-                    Debug.crash <| "WTF: " ++ (toString msg)
+                    Debug.crash <| "WTF: " ++ toString msg
 
         OnRadius valueAsString ->
             case String.toFloat valueAsString of
@@ -211,7 +222,7 @@ update msg model =
                     { model | radius = valueAsFloat }
 
                 _ ->
-                    Debug.crash <| "WTF: " ++ (toString msg)
+                    Debug.crash <| "WTF: " ++ toString msg
 
 
 
@@ -223,7 +234,7 @@ radiusSlider value =
     input
         [ Html.Events.onInput OnRadius
         , Html.Attributes.type_ "range"
-        , Html.Attributes.max "0.1"
+        , Html.Attributes.max "0.5"
         , Html.Attributes.min "0.01"
         , Html.Attributes.step "any"
         , Html.Attributes.defaultValue <| toString value
@@ -236,8 +247,8 @@ slider pointName coordinate value =
     input
         [ Html.Events.onInput (OnSlider pointName coordinate)
         , Html.Attributes.type_ "range"
-        , Html.Attributes.max "1"
-        , Html.Attributes.min "-1"
+        , Html.Attributes.max "2"
+        , Html.Attributes.min "-2"
         , Html.Attributes.step "any"
         , Html.Attributes.defaultValue <| toString value
         ]
@@ -276,7 +287,7 @@ view model =
         ]
         [ slidersView model
         , S.svg
-            [ SA.viewBox "-1 -1 2 2"
+            [ SA.viewBox "-1.7 -1 2 2"
             , style
                 [ ( "width", "50%" )
                 , ( "height", "50%" )
