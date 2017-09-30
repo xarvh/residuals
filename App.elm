@@ -13,7 +13,7 @@ import Time exposing (Time)
 
 --
 
-import Collision
+import Collision exposing (Collision)
 import Input
 import Level0
 import Math
@@ -83,7 +83,7 @@ init =
 -- update
 
 
-obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe ( Vec2, Vec2 )
+obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe Collision
 obsHeroCollision start end o =
     let
         ( a, b, c, d ) =
@@ -94,13 +94,13 @@ obsHeroCollision start end o =
                 _ ->
                     Debug.crash "vertices"
     in
-        [ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
-        --[ ( a, b ) ]
+        --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
+        [ ( a, b ) ]
             |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
             |> List.head
 
 
-heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Maybe ( Vec2, Vec2 )
+heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Maybe Collision
 heroCollisions c d obstacles =
     obstacles
         |> List.filterMap (obsHeroCollision c d)
@@ -136,18 +136,18 @@ updateHero dt inputState obstacles hero =
         newPosition =
             Vec2.add hero.position (Vec2.scale dt newVelocity)
 
-        maybeFix =
+        maybeCollision =
             heroCollisions hero.position newPosition obstacles
 
         ( fixedPosition, fixedVelocity ) =
-            case maybeFix of
+            case maybeCollision of
                 Nothing ->
                     ( newPosition, newVelocity )
 
-                Just ( surface, fixedPosition ) ->
-                    ( fixedPosition
+                Just collision ->
+                    ( collision.position
                       -- remove velocity component perpendicular to the surface
-                    , Vec2.scale (Vec2.dot newVelocity surface) surface
+                    , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
                     )
     in
         { hero | position = fixedPosition, velocity = fixedVelocity }

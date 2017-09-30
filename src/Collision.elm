@@ -4,23 +4,11 @@ import Math
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 
 
-{-
-   vecToBase : Vec2 -> ( Vec2, Vec2 )
-   vecToBase v =
-       let
-           e1 =
-               Vec2.normalize v
-
-           e2 =
-               Math.rotate90 e1
-       in
-           ( e1, e2 )
-
-
-   segmentToBase : Vec2 -> Vec2 -> ( Vec2, Vec2 )
-   segmentToBase a b =
-       Vec2.sub b a |> vecToBase
--}
+type alias Collision =
+    { normal : Vec2
+    , parallel : Vec2
+    , position : Vec2
+    }
 
 
 {-| Checks if a trajectory collides with a point
@@ -33,7 +21,6 @@ import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 
 *) d: trajectory end
 
-
 The circumference of radius `r` centered in `a` and the straight line
 passing through `c` and `d` are described by two equations.
 
@@ -42,47 +29,49 @@ Collisions happen where the two equations intersect.
 Intersection points can be found by solving the system of the two equations,
 which yields a second grade polynomial.
 The polynomial can have:
-* zero solutions: the objects are too far, no collision
-* one solution: the objects barely touch, no collision
-* two solutions: the objects overlap, collision must be resolved
+
+  - zero solutions: the objects are too far, no collision
+  - one solution: the objects barely touch, no collision
+  - two solutions: the objects overlap, collision must be resolved
 
 The math becomes much easier if we resolve it in a coordinate system where:
-* cd is horizontal and going from left to right
-* a is at the origin
 
-        ^
-        |
-  c --s1--s2-----------------> d
-        |
-        |
-        |
-        |
-        a----------------------------->
+  - cd is horizontal and going from left to right
 
+  - a is at the origin
 
-  Equation for cd:
+          ^
+          |
+
+    c --s1--s2-----------------> d
+    |
+    |
+    |
+    |
+    a----------------------------->
+
+Equation for cd:
 
       y = cY
 
-  Equation for the circumference:
+Equation for the circumference:
 
       x^2 + y^2 = r^2
 
-  The above have solutions:
+The above have solutions:
 
       y = cY
       x = +- sqrt(r^2 - cY^2)
 
-  Which means that collisions happen if and only if
+Which means that collisions happen if and only if
 
     r^2 > cY^2
 
-  Also, if solutions are present, we can take the one with the negative sign, as it is the one
-  closer to the trajectory start.
-
+Also, if solutions are present, we can take the one with the negative sign, as it is the one
+closer to the trajectory start.
 
 -}
-pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
+pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
 pointToPoint r a ( c, d ) =
     let
         -- coordinate transform: a is the origin
@@ -122,16 +111,14 @@ pointToPoint r a ( c, d ) =
             in
                 co * co / yy
     in
-        if rr <= cYcY then
+        if rr_ <= cYcY_ then
             Nothing
         else
-          let
-
-
-
-
-          in
-
+            Just
+                { normal = vec2 1 0
+                , parallel = vec2 0 1
+                , position = a
+                }
 
 
 {-| Checks if a trajectory collides with an oriented segment.
@@ -173,7 +160,7 @@ We can exclude collision if any of these conditions is true:
   - I is right of B (adjust for radius)
 
 -}
-pointToSegment : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe ( Vec2, Vec2 )
+pointToSegment : Float -> ( Vec2, Vec2 ) -> ( Vec2, Vec2 ) -> Maybe Collision
 pointToSegment r ( a, b ) ( c, d ) =
     if a == b || c == d then
         Nothing
@@ -242,6 +229,8 @@ pointToSegment r ( a, b ) ( c, d ) =
                             q =
                                 Debug.log "" ( a, b )
                         in
-                            Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
-                                |> (,) x
-                                |> Just
+                            Just
+                                { normal = y
+                                , parallel = x
+                                , position = Vec2.add (Vec2.scale fX x) (Vec2.scale fY y)
+                                }
