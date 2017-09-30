@@ -42,13 +42,12 @@ The math becomes much easier if we resolve it in a coordinate system where:
 
            ^
            |
-
     c --s1---s2-----------------> d
-    |
-    |
-    |
-    |
-    a----------------------------->
+           |
+           |
+           |
+           |
+           a----------------------------->
 
 Equation for cd:
 
@@ -72,73 +71,64 @@ closer to the trajectory start.
 
 -}
 pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
-pointToPoint r a ( c, d ) =
+pointToPoint r a___ ( c___, d___ ) =
     let
-        -- coordinates ending in `_` use `a` as origin
-        -- coordinates ending in `__` use `a` as origin and (d - c) as unit and positive direction
+        a_ =
+          vec2 0 0
+
         c_ =
-            Vec2.sub c a
+           Vec2.sub c___ a___
 
         d_ =
-            Vec2.sub d a
+           Vec2.sub d___ a___
+
 
         -- coordinate transform: cd is horizontal
-        -- since we do NOT normalise x and y, this transform changes the metric of our space
         x =
-            Vec2.sub d c
+            Vec2.sub d_ c_ |> Vec2.normalize
 
         y =
             Math.rotate90 x
 
-        xx =
-            Vec2.lengthSquared x
+        changeBase v =
+          vec2 (Vec2.dot v x) (Vec2.dot v y)
 
-        yy =
-            xx
+        -- new points
+        a = changeBase a_
 
-        -- r^2, with the new metric
-        rr__ =
-            r * r * xx
+        c = changeBase c_
 
-        c_dot_y =
-            Vec2.dot c_ y
+        d = changeBase d_
 
-        -- cY__^2
-        cYcY__ =
-            c_dot_y * c_dot_y / yy
+        -- cY
+        cY =
+            Vec2.getY c
     in
-        if rr__ <= cYcY__ then
+        if r * r <= cY * cY then
             Nothing
         else
             let
-                -- find normalised base
-                nx =
-                    Vec2.normalize x
-
-                ny =
-                    Math.rotate90 nx
-
-                cY__ =
-                    Vec2.dot c_ ny
-
                 -- find the solution coordinates
-                sY__ =
-                    cY__
+                sY =
+                    cY
 
-                sX__ =
-                    -1 * sqrt (rr__ - cYcY__)
+                sX =
+                    -1 * sqrt (r * r - cY * cY)
 
                 -- transform the solution coordinates
-                s =
-                    Vec2.add (Vec2.scale sX__ nx) (Vec2.scale sY__ ny)
+                s_ =
+                  Vec2.add (Vec2.scale sX x) (Vec2.scale sY y)
+
+                s___ =
+                     Vec2.add s_ a___
 
                 normal =
-                    Vec2.sub s a
+                    Vec2.sub s___ a___ |> Vec2.normalize
             in
                 Just
                     { normal = normal
                     , parallel = Math.rotate90 normal
-                    , position = s
+                    , position = s___
                     }
 
 

@@ -26,7 +26,7 @@ import Viewport
 
 
 heroRadius =
-    0.04
+    0.4
 
 
 
@@ -36,6 +36,7 @@ heroRadius =
 type alias Hero =
     { position : Vec2
     , velocity : Vec2
+    , maybeCollision : Maybe Collision
     }
 
 
@@ -57,6 +58,14 @@ type Msg
 -- init
 
 
+initHero : Hero
+initHero =
+    { position = vec2 0 0
+    , velocity = vec2 0 0
+    , maybeCollision = Nothing
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
     let
@@ -67,10 +76,7 @@ init =
             { obstacles = Level0.obstacles
             , viewport = viewport
             , input = Input.init
-            , hero =
-                { position = vec2 0 0
-                , velocity = vec2 0 0
-                }
+            , hero = initHero
             }
 
         cmd =
@@ -114,7 +120,8 @@ updateHero dt inputState obstacles hero =
             0.000001
 
         gravity =
-            thrust / 2
+            -- thrust / 2
+            0
 
         drag =
             0.03
@@ -140,17 +147,27 @@ updateHero dt inputState obstacles hero =
             heroCollisions hero.position newPosition obstacles
 
         ( fixedPosition, fixedVelocity ) =
-            case maybeCollision of
-                Nothing ->
-                    ( newPosition, newVelocity )
+            ( newPosition, newVelocity )
 
-                Just collision ->
-                    ( collision.position
-                      -- remove velocity component perpendicular to the surface
-                    , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
-                    )
+        --             case maybeCollision of
+        --                 Nothing ->
+        --
+        --                 Just collision ->
+        --                     ( newPosition, newVelocity, Nothing )
+        --                     ( collision.position
+        --                       -- remove velocity component perpendicular to the surface
+        --                     , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
+        --                     )
     in
-        { hero | position = fixedPosition, velocity = fixedVelocity }
+        { hero
+            | position = fixedPosition
+            , velocity = fixedVelocity
+            , maybeCollision =
+                if maybeCollision == Nothing then
+                    hero.maybeCollision
+                else
+                    maybeCollision
+        }
 
 
 updateFrame : Time -> Model -> Model
@@ -182,7 +199,7 @@ update msg model =
 -- view
 
 
-renderHero : Mat4 -> Hero -> WebGL.Entity
+renderHero : Mat4 -> Hero -> List WebGL.Entity
 renderHero viewMatrix hero =
     let
         size =
@@ -197,8 +214,38 @@ renderHero viewMatrix hero =
                     |> Mat4.scale3 size size 1
                     |> Mat4.mul viewMatrix
             }
+
+        coll =
+            case hero.maybeCollision of
+                Nothing ->
+                    []
+
+                Just collision ->
+                    [ Primitives.icosagon
+                        { color = 0.5
+                        , transform =
+                            Mat4.identity
+                                |> Mat4.translate3 (Vec2.getX collision.position) (Vec2.getY collision.position) -1
+                                |> Mat4.scale3 0.01 0.01 1
+                                |> Mat4.mul viewMatrix
+                        }
+                    , let
+                        p =
+                            Vec2.add collision.position (Vec2.scale 0.03 collision.normal)
+                      in
+                        Primitives.tris
+                            { color = 0.5
+                            , transform =
+                                Mat4.identity
+                                    |> Mat4.translate3 (Vec2.getX p) (Vec2.getY p) -1
+                                    |> Mat4.scale3 0.01 0.01 1
+                                    |> Mat4.mul viewMatrix
+                            }
+                    ]
     in
-        Primitives.icosagon uniforms
+        [ Primitives.icosagon uniforms
+        ]
+            ++ coll
 
 
 
@@ -248,7 +295,7 @@ view model =
                 [ Html.text "html,head,body { padding:0; margin:0; }"
                 ]
             , [ obstacles
-              , [ hero ]
+              , hero
               ]
                 |> List.concat
                 |> WebGL.toHtml

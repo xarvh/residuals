@@ -148,7 +148,7 @@ icosagonVertices : List Vec3
 icosagonVertices =
     let
         n =
-            20
+            100
 
         half =
             0.5
