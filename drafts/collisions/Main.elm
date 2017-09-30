@@ -13,6 +13,10 @@ import Svg.Attributes as SA
 -- init
 
 
+
+
+
+
 init =
     { radius = 0.4
     , points =
@@ -25,12 +29,12 @@ init =
           , y = -0.44464609026908875 + 0.1 / 2
           }
         , { name = "C"
-          , x = -1.2330782413482666
-          , y = -0.05903274938464165
+          , x = -1.095051646232605
+          , y = -0.03602510690689087
           }
         , { name = "D"
-          , x = -1.234329104423523
-          , y = -0.05910038575530052
+          , x = -1.0989317893981934
+          , y = -0.038303084671497345
           }
         ]
             |> List.map (\p -> ( p.name, p ))
@@ -45,8 +49,8 @@ draw radius aa bb cc dd =
             ( p2v aa, p2v bb, p2v cc, p2v dd )
 
         maybeCollision =
-            Collision.pointToSegment radius ( a, b ) ( c, d )
-            --Collision.pointToPoint radius b ( c, d )
+            --Collision.pointToSegment radius ( a, b ) ( c, d )
+            Collision.pointToPoint radius a ( c, d )
 
         fix =
             case maybeCollision of

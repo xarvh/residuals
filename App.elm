@@ -100,7 +100,7 @@ obsHeroCollision start end o =
     in
     --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
     --[ ( a, b ) ]
-    [a, b]
+    [a]
         |> List.filterMap (\t -> Collision.pointToPoint heroRadius t ( start, end ))
         |> List.head
 
