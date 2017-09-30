@@ -119,8 +119,8 @@ updateHero dt inputState obstacles hero =
             0.000001
 
         gravity =
-            -- thrust / 2
-            0
+            thrust / 2
+            --0
 
         drag =
             0.03

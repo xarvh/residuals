@@ -82,7 +82,7 @@ closer to the trajectory start.
 pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
 pointToPoint r a___ ( c___, d___ ) =
     if c___ == d___ then
-        Debug.log "==" Nothing
+        Nothing
     else
         let
             a_ =
@@ -122,7 +122,7 @@ pointToPoint r a___ ( c___, d___ ) =
                 r * r - cY * cY
         in
         if determinant <= 0 then
-            Debug.log "de" Nothing
+            Nothing
         else
             let
                 -- find the solution coordinates
@@ -146,15 +146,11 @@ pointToPoint r a___ ( c___, d___ ) =
                 (dX, dY) = Vec2.toTuple d
                 l = dX - cX
             in
-            if sX - cX < -0.0001 then
+            if (sX - cX) / l < -1e-2 then
               Nothing
             else if sX > dX then
---               let
---                   q = Debug.log "" ((cX, cY), (dX, dY), (sX, sY))
---               in
                 Nothing
             else
-                Debug.log "------------------------------------------------" <|
                 Just
                     { normal = normal
                     , parallel = Math.rotate90 normal
