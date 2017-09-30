@@ -40,10 +40,10 @@ The math becomes much easier if we resolve it in a coordinate system where:
 
   - a is at the origin
 
-          ^
-          |
+           ^
+           |
 
-    c --s1--s2-----------------> d
+    c --s1---s2-----------------> d
     |
     |
     |
@@ -74,17 +74,18 @@ closer to the trajectory start.
 pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
 pointToPoint r a ( c, d ) =
     let
-        -- coordinate transform: a is the origin
-        c_a =
+        -- coordinates ending in `_` use `a` as origin
+        -- coordinates ending in `__` use `a` as origin and (d - c) as unit and positive direction
+        c_ =
             Vec2.sub c a
 
-        d_a =
+        d_ =
             Vec2.sub d a
 
         -- coordinate transform: cd is horizontal
         -- since we do NOT normalise x and y, this transform changes the metric of our space
         x =
-            Vec2.sub d_a c_a
+            Vec2.sub d c
 
         y =
             Math.rotate90 x
@@ -96,29 +97,49 @@ pointToPoint r a ( c, d ) =
             xx
 
         -- r^2, with the new metric
-        rr_ =
-            r * r / xx
+        rr__ =
+            r * r * xx
 
-        -- cY, with the new metric and origin
-        --
-        -- cY_ = (Vec2.dot c_a y) / Vec2.length y
-        --
-        -- cY_^2
-        cYcY_ =
-            let
-                co =
-                    Vec2.dot c_a y
-            in
-                co * co / yy
+        c_dot_y =
+            Vec2.dot c_ y
+
+        -- cY__^2
+        cYcY__ =
+            c_dot_y * c_dot_y / yy
     in
-        if rr_ <= cYcY_ then
+        if rr__ <= cYcY__ then
             Nothing
         else
-            Just
-                { normal = vec2 1 0
-                , parallel = vec2 0 1
-                , position = a
-                }
+            let
+                -- find normalised base
+                nx =
+                    Vec2.normalize x
+
+                ny =
+                    Math.rotate90 nx
+
+                cY__ =
+                    Vec2.dot c_ ny
+
+                -- find the solution coordinates
+                sY__ =
+                    cY__
+
+                sX__ =
+                    -1 * sqrt (rr__ - cYcY__)
+
+                -- transform the solution coordinates
+                s =
+                    Vec2.add (Vec2.scale sX__ nx) (Vec2.scale sY__ ny)
+
+                normal =
+                    Vec2.sub s a
+            in
+                Just
+                    { normal = normal
+                    , parallel = Math.rotate90 normal
+                    , position = s
+                    }
 
 
 {-| Checks if a trajectory collides with an oriented segment.
@@ -225,9 +246,6 @@ pointToSegment r ( a, b ) ( c, d ) =
 
                             fY =
                                 iY
-
-                            q =
-                                Debug.log "" ( a, b )
                         in
                             Just
                                 { normal = y
