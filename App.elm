@@ -99,8 +99,9 @@ obsHeroCollision start end o =
                     Debug.crash "vertices"
     in
     --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
-    [ ( a, b ) ]
-        |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
+    --[ ( a, b ) ]
+    [a, b]
+        |> List.filterMap (\t -> Collision.pointToPoint heroRadius t ( start, end ))
         |> List.head
 
 

@@ -4,6 +4,7 @@ import Collision
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
 import List.Extra
+import Math
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Test exposing (Test, describe)
 
@@ -66,6 +67,7 @@ all =
 
                     Just collision ->
                         Vec2.distanceSquared c d
+                            -- TODO: add also check with distance from `d`
                             |> Expect.greaterThan (Vec2.distanceSquared c collision.position)
 
         --
@@ -95,7 +97,7 @@ all =
                         in
                         -- dd should be roughly equal to rr
                         abs (dd / rr - 1)
-                            |> Expect.lessThan 0.01
+                            |> Expect.lessThan 0.001
 
         --
         , Test.fuzz pointToPointArgsFuzzer "Collision point should lay on the trajectory" <|
@@ -115,26 +117,6 @@ all =
                         Expect.pass
 
                     Just collision ->
-                        let
-                            ( x, y ) =
-                                Vec2.toTuple collision.position
-
-                            -- https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
-                            deltaX =
-                                dX - cX
-
-                            deltaY =
-                                dY - cY
-
-                            n =
-                                deltaY * x - deltaX * y + dX * cY - dY * cX
-
-                            dd =
-                                deltaY * deltaY + deltaX * deltaX
-
-                            squaredDistance =
-                                n * n / dd
-                        in
-                        squaredDistance
+                        Math.pointToLineSquaredDistance collision.position ( c, d )
                             |> Expect.lessThan 0.0001
         ]

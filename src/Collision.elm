@@ -70,22 +70,13 @@ Also, if solutions are present, we can take the one with the negative sign, as i
 closer to the trajectory start.
 
 
+# Constraints
 
+  - "Object should not jump" => CD should be longer than CS
 
+  - "Object should stop at R distance from the point" => SA should be roughly equal to R
 
-
-Constraints
-===========
-
-* "Object should not jump" => CD should be longer than CS
-
-* "Object should stop at R distance from the point" => SA should be roughly equal to R
-
-* S should lay within C and D
-
-
-
-
+  - S should lay within C and D
 
 -}
 pointToPoint : Float -> Vec2 -> ( Vec2, Vec2 ) -> Maybe Collision
@@ -151,7 +142,7 @@ pointToPoint r a___ ( c___, d___ ) =
                 normal =
                     Vec2.sub s___ a___ |> Vec2.normalize
             in
-            if sX < Vec2.getX c || sX > Vec2.getX d then
+            if sX - Vec2.getX c < 0 || sX - Vec2.getX d > 0 then
                 Nothing
             else
                 Just
