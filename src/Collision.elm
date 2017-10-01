@@ -123,6 +123,10 @@ pointToPoint r a___ ( c___, d___ ) =
         in
         if determinant <= 0 then
             Nothing
+        else if Vec2.distance d____ a____ < r then
+          Just
+            {
+
         else
             let
                 -- find the solution coordinates
@@ -146,7 +150,8 @@ pointToPoint r a___ ( c___, d___ ) =
                 (dX, dY) = Vec2.toTuple d
                 l = dX - cX
             in
-            if (sX - cX) / l < -1e-2 then
+            --if (sX - cX) / l < -1e-2 then
+            if sX - cX < 0 then
               Nothing
             else if sX > dX then
                 Nothing

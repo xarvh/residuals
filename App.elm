@@ -24,7 +24,7 @@ import WebGL
 
 
 heroRadius =
-    0.4
+    0.1
 
 
 
@@ -98,10 +98,8 @@ obsHeroCollision start end o =
                 _ ->
                     Debug.crash "vertices"
     in
-    --[ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
-    --[ ( a, b ) ]
-    [a]
-        |> List.filterMap (\t -> Collision.pointToPoint heroRadius t ( start, end ))
+    [ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
+        |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
         |> List.head
 
 
@@ -120,8 +118,8 @@ updateHero dt inputState obstacles hero =
 
         gravity =
             thrust / 2
-            --0
 
+        --0
         drag =
             0.03
 
@@ -151,7 +149,7 @@ updateHero dt inputState obstacles hero =
                     ( newPosition, newVelocity )
 
                 Just collision ->
---                     ( newPosition, newVelocity )
+                    --                     ( newPosition, newVelocity )
                     ( collision.position
                       -- remove velocity component perpendicular to the surface
                     , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
