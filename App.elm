@@ -18,10 +18,14 @@ import Viewport
 import WebGL
 
 
--- Globals
+-- Tiles
 
 
-tiles : Array (Array Bool)
+type alias Tile =
+    Bool
+
+
+tiles : Array (Array Tile)
 tiles =
     [ "***                  "
     , "*                   *"
@@ -29,14 +33,14 @@ tiles =
     , "                     "
     , "                     "
     , "                     "
-    , "                     "
+    , "      *********      "
     , "                     "
     , "                     "
     , "                     "
     , "                     "
     , "     **              "
     , "                     "
-    , "**********  *********"
+    , "* * * * * * *********"
     , "                     "
     , "                     "
     , "                     "
@@ -49,7 +53,7 @@ tiles =
         |> Array.fromList
 
 
-tile : ( Int, Int ) -> Bool
+tile : ( Int, Int ) -> Tile
 tile ( x, y ) =
     tiles
         |> Array.get y
@@ -62,14 +66,26 @@ tileSize =
     1000
 
 
-type alias Vec =
-    { x : Int
-    , y : Int
-    }
+
+-- Hero
+
+
+heroWidth =
+    tileSize
+
+
+heroHeight =
+    tileSize * 2
 
 
 
 -- Types
+
+
+type alias Vec =
+    { x : Int
+    , y : Int
+    }
 
 
 type alias Hero =
@@ -81,6 +97,7 @@ type alias Hero =
 type alias Model =
     { viewport : Viewport.Model
     , input : Input.Model
+    , bright : List Vec
     , hero : Hero
     }
 
@@ -104,6 +121,7 @@ init =
         model =
             { viewport = viewport
             , input = Input.init
+            , bright = []
             , hero =
                 { position = Vec (tileSize * 5) (tileSize * 5)
                 , velocity = Vec 0 0
@@ -120,7 +138,7 @@ init =
 -- update
 
 
-updateHero : Time -> Input.State -> Hero -> Hero
+updateHero : Time -> Input.State -> Hero -> ( Hero, List Vec )
 updateHero dt inputState hero =
     let
         speed =
@@ -140,10 +158,29 @@ updateHero dt inputState hero =
         y =
             hero.position.y + dY
 
-        position =
+        newPosition =
             { x = x, y = y }
+
+        left =
+            x - heroWidth // 2
+
+        right =
+            x + heroWidth // 2
+
+        top =
+            y + heroHeight
+
+        bottom =
+            y
+
+        heroHeighInTiles =
+            ceiling (toFloat heroHeight / toFloat tileSize)
+
+        collidingTilesLeft =
+            List.range 0 heroHeighInTiles
+                |> List.map (\tileYIndex -> Vec (left // tileSize) (tileYIndex + bottom // tileSize))
     in
-    { hero | position = position }
+    ( { hero | position = newPosition }, collidingTilesLeft )
 
 
 updateFrame : Time -> Model -> Model
@@ -154,8 +191,11 @@ updateFrame dt model =
 
         inputState =
             Input.keyboardAndMouseInputState model.input transformMouseCoordinates
+
+        ( newHero, bright ) =
+            updateHero dt inputState model.hero
     in
-    { model | hero = updateHero dt inputState model.hero }
+    { model | hero = newHero, bright = bright }
 
 
 update : Msg -> Model -> Model
@@ -180,20 +220,26 @@ renderHero viewMatrix hero =
     let
         size =
             toFloat tileSize
+
+        x =
+            hero.position.x
+
+        y =
+            hero.position.y + heroHeight // 2
     in
     [ Primitives.quad
         { color = 0
         , transform =
             Mat4.identity
-                |> Mat4.translate3 (toFloat hero.position.x) (toFloat hero.position.y) 0
-                |> Mat4.scale3 size size 1
+                |> Mat4.translate3 (toFloat x) (toFloat y) 0
+                |> Mat4.scale3 (toFloat heroWidth) (toFloat heroHeight) 1
                 |> Mat4.mul viewMatrix
         }
     ]
 
 
-renderTile : Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
-renderTile viewMatrix ( tileX, tileY ) tile =
+renderTile : List Vec -> Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
+renderTile bright viewMatrix ( tileX, tileY ) tile =
     if tile then
         let
             size =
@@ -206,7 +252,11 @@ renderTile viewMatrix ( tileX, tileY ) tile =
                 toFloat tileY + 0.5
         in
         [ Primitives.quad
-            { color = 0.3
+            { color =
+                if List.member { x = tileX, y = tileY } bright then
+                    0.8
+                else
+                    0.3
             , transform =
                 Mat4.identity
                     |> Mat4.scale3 size size 1
@@ -218,13 +268,13 @@ renderTile viewMatrix ( tileX, tileY ) tile =
         []
 
 
-renderTiles : Mat4 -> List WebGL.Entity
-renderTiles viewMatrix =
+renderTiles : Model -> Mat4 -> List WebGL.Entity
+renderTiles model viewMatrix =
     let
         mapRow yIndex row =
             row
                 |> Array.toList
-                |> List.indexedMap (\xIndex tile -> renderTile viewMatrix ( xIndex, yIndex ) tile)
+                |> List.indexedMap (\xIndex tile -> renderTile model.bright viewMatrix ( xIndex, yIndex ) tile)
     in
     tiles
         |> Array.toList
@@ -249,7 +299,7 @@ view model =
             [ Html.text "html,head,body { padding:0; margin:0; border:0; }"
             , Html.text ".root { height:100vh; display:flex; align-items:center; justify-content:center; }"
             ]
-        , [ renderTiles viewMatrix
+        , [ renderTiles model viewMatrix
           , renderHero viewMatrix model.hero
           ]
             |> List.concat
