@@ -28,15 +28,15 @@ tiles =
     , "  **  **             "
     , "                     "
     , "                     "
-    , "*********************"
     , "                     "
     , "                     "
     , "                     "
     , "                     "
     , "                     "
     , "                     "
+    , "     **              "
     , "                     "
-    , "                     "
+    , "**********  *********"
     , "                     "
     , "                     "
     , "                     "
@@ -105,7 +105,7 @@ init =
             { viewport = viewport
             , input = Input.init
             , hero =
-                { position = Vec 0 0
+                { position = Vec (tileSize * 5) (tileSize * 5)
                 , velocity = Vec 0 0
                 }
             }
@@ -156,13 +156,28 @@ update msg model =
 
 renderHero : Mat4 -> Hero -> List WebGL.Entity
 renderHero viewMatrix hero =
-    []
+        let
+            size =
+                toFloat tileSize
+        in
+        [ Primitives.quad
+            { color = 0
+            , transform =
+                Mat4.identity
+                    |> Mat4.translate3 (toFloat hero.position.x) (toFloat hero.position.y) 0
+                    |> Mat4.scale3 size size 1
+                    |> Mat4.mul viewMatrix
+            }
+        ]
 
 
 renderTile : Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
 renderTile viewMatrix ( tileX, tileY ) tile =
     if tile then
         let
+            size =
+                toFloat tileSize
+
             x =
                 toFloat tileX + 0.5
 
@@ -173,7 +188,7 @@ renderTile viewMatrix ( tileX, tileY ) tile =
             { color = 0.3
             , transform =
                 Mat4.identity
-                    |> Mat4.scale3 1 1 1
+                    |> Mat4.scale3 size size 1
                     |> Mat4.translate3 x y 0
                     |> Mat4.mul viewMatrix
             }
@@ -200,8 +215,11 @@ renderTiles viewMatrix =
 view : Model -> Html Msg
 view model =
     let
+        gameAreaSize =
+            20 * toFloat tileSize
+
         viewMatrix =
-            Viewport.worldToCameraMatrix model.viewport 20 ( 10, 10 )
+            Viewport.worldToCameraMatrix model.viewport gameAreaSize ( gameAreaSize / 2, gameAreaSize / 2 )
     in
     Html.div
         [ Html.Attributes.class "root" ]
