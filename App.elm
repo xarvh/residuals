@@ -53,12 +53,12 @@ tiles =
         |> Array.fromList
 
 
-tile : ( Int, Int ) -> Tile
-tile ( x, y ) =
+tile : Int -> Int -> Tile
+tile x y =
     tiles
         |> Array.get y
-        |> Maybe.andThen (Array.get y)
-        |> Maybe.withDefault True
+        |> Maybe.andThen (Array.get x)
+        |> Maybe.withDefault False
 
 
 tileSize : Int
@@ -158,9 +158,6 @@ updateHero dt inputState hero =
         y =
             hero.position.y + dY
 
-        newPosition =
-            { x = x, y = y }
-
         left =
             x - heroWidth // 2
 
@@ -178,9 +175,18 @@ updateHero dt inputState hero =
 
         collidingTilesLeft =
             List.range 0 heroHeighInTiles
-                |> List.map (\tileYIndex -> Vec (left // tileSize) (tileYIndex + bottom // tileSize))
+                |> List.any (\tileYIndex -> tile (left // tileSize) (tileYIndex + bottom // tileSize))
+
+        newPosition =
+            { x =
+                if dX < 0 && collidingTilesLeft then
+                    ((left // tileSize) + 1) * tileSize + heroWidth // 2
+                else
+                    x
+            , y = y
+            }
     in
-    ( { hero | position = newPosition }, collidingTilesLeft )
+    ( { hero | position = newPosition }, [] )
 
 
 updateFrame : Time -> Model -> Model
@@ -239,8 +245,8 @@ renderHero viewMatrix hero =
 
 
 renderTile : List Vec -> Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
-renderTile bright viewMatrix ( tileX, tileY ) tile =
-    if tile then
+renderTile bright viewMatrix ( tileX, tileY ) tt =
+    if tt then
         let
             size =
                 toFloat tileSize
