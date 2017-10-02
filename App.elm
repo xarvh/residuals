@@ -122,7 +122,28 @@ init =
 
 updateHero : Time -> Input.State -> Hero -> Hero
 updateHero dt inputState hero =
-    hero
+    let
+        speed =
+            10
+
+        ( dX, dY ) =
+            inputState.move
+                |> Math.clampToLength 1
+                |> Vec2.scale (dt * speed)
+                |> Vec2.toTuple
+                |> Tuple.mapFirst round
+                |> Tuple.mapSecond round
+
+        x =
+            hero.position.x + dX
+
+        y =
+            hero.position.y + dY
+
+        position =
+            { x = x, y = y }
+    in
+    { hero | position = position }
 
 
 updateFrame : Time -> Model -> Model
@@ -156,19 +177,19 @@ update msg model =
 
 renderHero : Mat4 -> Hero -> List WebGL.Entity
 renderHero viewMatrix hero =
-        let
-            size =
-                toFloat tileSize
-        in
-        [ Primitives.quad
-            { color = 0
-            , transform =
-                Mat4.identity
-                    |> Mat4.translate3 (toFloat hero.position.x) (toFloat hero.position.y) 0
-                    |> Mat4.scale3 size size 1
-                    |> Mat4.mul viewMatrix
-            }
-        ]
+    let
+        size =
+            toFloat tileSize
+    in
+    [ Primitives.quad
+        { color = 0
+        , transform =
+            Mat4.identity
+                |> Mat4.translate3 (toFloat hero.position.x) (toFloat hero.position.y) 0
+                |> Mat4.scale3 size size 1
+                |> Mat4.mul viewMatrix
+        }
+    ]
 
 
 renderTile : Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
