@@ -21,49 +21,72 @@ import WebGL
 -- Tiles
 
 
-type alias Tile =
-    Bool
-
-
-tiles : Array (Array Tile)
-tiles =
-    [ "***                  "
-    , "*                   *"
-    , "  **  **             "
-    , "                     "
-    , "                     "
-    , "                     "
-    , "      *********      "
-    , "                     "
-    , "                     "
-    , "                     "
-    , "                     "
-    , "     **              "
-    , "                     "
-    , "* * * * * * *********"
-    , "                     "
-    , "                     "
-    , "                     "
-    , "                     "
-    , "***                 *"
-    , "** *************** **"
-    ]
-        |> List.reverse
-        |> List.map (String.toList >> List.map ((==) '*') >> Array.fromList)
-        |> Array.fromList
-
-
-tile : Int -> Int -> Tile
-tile x y =
-    tiles
-        |> Array.get y
-        |> Maybe.andThen (Array.get x)
-        |> Maybe.withDefault False
+type Tile
+    = Empty
+    | Full
+    | Slope Int Int
 
 
 tileSize : Int
 tileSize =
     1000
+
+
+tiles : Array (Array Tile)
+tiles =
+    [ "===                  "
+    , "=                   ="
+    , "  ==  ==             "
+    , "                     "
+    , "                     "
+    , "                     "
+    , "      =========      "
+    , "                     "
+    , "                     "
+    , "                     "
+    , "  ===>          /=== "
+    , "     =>        /     "
+    , "       ========      "
+    , "= =            ======"
+    , "                     "
+    , "                     "
+    , "                     "
+    , "                     "
+    , "===                 ="
+    , "== =============== =="
+    ]
+        |> List.reverse
+        |> List.map (String.toList >> List.map charToTile >> Array.fromList)
+        |> Array.fromList
+
+
+charToTile : Char -> Tile
+charToTile char =
+    case char of
+        '=' ->
+            Full
+
+        '>' ->
+            Slope tileSize 0
+
+        '/' ->
+            Slope 0 tileSize
+
+        _ ->
+            Empty
+
+
+getTileByIndices : Int -> Int -> Tile
+getTileByIndices x y =
+    tiles
+        |> Array.get y
+        |> Maybe.andThen (Array.get x)
+        |> Maybe.withDefault Empty
+
+
+getTileAt : Int -> Int -> Tile
+getTileAt x y =
+    getTileByIndices (x // tileSize) (y // tileSize)
 
 
 
@@ -144,14 +167,10 @@ type alias Size =
     }
 
 
-tileAt x y =
-    tile (x // tileSize) (y // tileSize)
-
-
 tilesFromBottomToTop x bottom top =
     if bottom > top then
         False
-    else if tileAt x bottom then
+    else if getTileAt x bottom /= Empty then
         True
     else
         tilesFromBottomToTop x (bottom + tileSize) top
@@ -160,7 +179,7 @@ tilesFromBottomToTop x bottom top =
 tilesFromLeftToRight left right y =
     if left > right then
         False
-    else if tileAt left y then
+    else if getTileAt left y /= Empty then
         True
     else
         tilesFromLeftToRight (left + tileSize) right y
@@ -306,34 +325,39 @@ renderHero viewMatrix hero =
     ]
 
 
-renderTile : List Vec -> Mat4 -> ( Int, Int ) -> Bool -> List WebGL.Entity
+renderTile : List Vec -> Mat4 -> ( Int, Int ) -> Tile -> List WebGL.Entity
 renderTile bright viewMatrix ( tileX, tileY ) tt =
-    if tt then
-        let
-            size =
-                toFloat tileSize
+    case tt of
+        Empty ->
+            []
 
-            x =
-                toFloat tileX + 0.5
+        Slope left right ->
+            []
 
-            y =
-                toFloat tileY + 0.5
-        in
-        [ Primitives.quad
-            { color =
-                if List.member { x = tileX, y = tileY } bright then
-                    0.8
-                else
-                    0.3
-            , transform =
-                Mat4.identity
-                    |> Mat4.scale3 size size 1
-                    |> Mat4.translate3 x y 0
-                    |> Mat4.mul viewMatrix
-            }
-        ]
-    else
-        []
+        Full ->
+            let
+                size =
+                    toFloat tileSize
+
+                x =
+                    toFloat tileX + 0.5
+
+                y =
+                    toFloat tileY + 0.5
+            in
+            [ Primitives.quad
+                { color =
+                    if List.member { x = tileX, y = tileY } bright then
+                        0.8
+                    else
+                        0.3
+                , transform =
+                    Mat4.identity
+                        |> Mat4.scale3 size size 1
+                        |> Mat4.translate3 x y 0
+                        |> Mat4.mul viewMatrix
+                }
+            ]
 
 
 renderTiles : Model -> Mat4 -> List WebGL.Entity
