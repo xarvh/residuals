@@ -138,11 +138,85 @@ init =
 -- update
 
 
+type alias Size =
+    { width : Int
+    , height : Int
+    }
+
+
+tileAt x y =
+    tile (x // tileSize) (y // tileSize)
+
+
+tilesFromBottomToTop x bottom top =
+    if bottom > top then
+        False
+    else if tileAt x bottom then
+        True
+    else
+        tilesFromBottomToTop x (bottom + tileSize) top
+
+
+tilesFromLeftToRight y left right =
+    if left > right then
+        False
+    else if tileAt left y then
+        True
+    else
+        tilesFromBottomToTop y (left + tileSize) right
+
+
+snapDownToTile v =
+    (v // tileSize) * tileSize
+
+
+tileCollision : Size -> Vec -> ( Int, Int ) -> Vec
+tileCollision size position ( dX, dY ) =
+    let
+        -- ideal new position
+        idealX =
+            position.x + dX
+
+        idealY =
+            position.y + dY
+
+        -- aabb
+        left =
+            idealX - size.width // 2
+
+        right =
+            idealX + size.width // 2
+
+        top =
+            idealY + size.height // 2
+
+        bottom =
+            idealY - size.height // 2
+
+        newX =
+            if dX < 0 && tilesFromBottomToTop left bottom top then
+                snapDownToTile (left + tileSize) + size.width // 2
+            else if dX > 0 && tilesFromBottomToTop right bottom top then
+                snapDownToTile right - size.width // 2 - 1
+            else
+                idealX
+
+        newY =
+            if dY < 0 && tilesFromLeftToRight bottom left right then
+                snapDownToTile (bottom + tileSize) + size.height // 2
+            else if dY > 0 && tilesFromLeftToRight top left right then
+                snapDownToTile top - size.height // 2 - 1
+            else
+                idealY
+    in
+    { x = newX, y = newY }
+
+
 updateHero : Time -> Input.State -> Hero -> ( Hero, List Vec )
 updateHero dt inputState hero =
     let
         speed =
-            10
+            toFloat tileSize / 100
 
         ( dX, dY ) =
             inputState.move
@@ -152,41 +226,17 @@ updateHero dt inputState hero =
                 |> Tuple.mapFirst round
                 |> Tuple.mapSecond round
 
-        x =
-            hero.position.x + dX
-
-        y =
-            hero.position.y + dY
-
-        left =
-            x - heroWidth // 2
-
-        right =
-            x + heroWidth // 2
-
-        top =
-            y + heroHeight
-
-        bottom =
-            y
-
-        heroHeighInTiles =
-            ceiling (toFloat heroHeight / toFloat tileSize)
-
-        collidingTilesLeft =
-            List.range 0 heroHeighInTiles
-                |> List.any (\tileYIndex -> tile (left // tileSize) (tileYIndex + bottom // tileSize))
-
-        newPosition =
-            { x =
-                if dX < 0 && collidingTilesLeft then
-                    ((left // tileSize) + 1) * tileSize + heroWidth // 2
-                else
-                    x
-            , y = y
-            }
+        fixedPosition =
+            tileCollision
+                { width = heroWidth
+                , height = heroHeight
+                }
+                { x = hero.position.x
+                , y = hero.position.y + heroHeight // 2
+                }
+                ( dX, dY )
     in
-    ( { hero | position = newPosition }, [] )
+    ( { hero | position = { fixedPosition | y = fixedPosition.y - heroHeight // 2 } }, [] )
 
 
 updateFrame : Time -> Model -> Model
