@@ -157,13 +157,13 @@ tilesFromBottomToTop x bottom top =
         tilesFromBottomToTop x (bottom + tileSize) top
 
 
-tilesFromLeftToRight y left right =
+tilesFromLeftToRight left right y =
     if left > right then
         False
     else if tileAt left y then
         True
     else
-        tilesFromBottomToTop y (left + tileSize) right
+        tilesFromLeftToRight (left + tileSize) right y
 
 
 snapDownToTile v =
@@ -202,14 +202,16 @@ tileCollision size position ( dX, dY ) =
                 idealX
 
         newY =
-            if dY < 0 && tilesFromLeftToRight bottom left right then
+            if dY < 0 && tilesFromLeftToRight left right bottom then
                 snapDownToTile (bottom + tileSize) + size.height // 2
-            else if dY > 0 && tilesFromLeftToRight top left right then
+            else if dY > 0 && tilesFromLeftToRight left right top then
                 snapDownToTile top - size.height // 2 - 1
             else
                 idealY
     in
-    { x = newX, y = newY }
+    { x = newX
+    , y = newY
+    }
 
 
 updateHero : Time -> Input.State -> Hero -> ( Hero, List Vec )
@@ -231,12 +233,10 @@ updateHero dt inputState hero =
                 { width = heroWidth
                 , height = heroHeight
                 }
-                { x = hero.position.x
-                , y = hero.position.y + heroHeight // 2
-                }
+                hero.position
                 ( dX, dY )
     in
-    ( { hero | position = { fixedPosition | y = fixedPosition.y - heroHeight // 2 } }, [] )
+    ( { hero | position = fixedPosition }, [] )
 
 
 updateFrame : Time -> Model -> Model
@@ -281,7 +281,7 @@ renderHero viewMatrix hero =
             hero.position.x
 
         y =
-            hero.position.y + heroHeight // 2
+            hero.position.y
     in
     [ Primitives.quad
         { color = 0
