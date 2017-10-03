@@ -18,6 +18,18 @@ import Viewport
 import WebGL
 
 
+-- Hero
+
+
+heroWidth =
+    tileSize // 2
+
+
+heroHeight =
+    tileSize * 2 - 1
+
+
+
 -- Tiles
 
 
@@ -87,18 +99,6 @@ getTileByIndices x y =
 getTileAt : Int -> Int -> Tile
 getTileAt x y =
     getTileByIndices (x // tileSize) (y // tileSize)
-
-
-
--- Hero
-
-
-heroWidth =
-    tileSize
-
-
-heroHeight =
-    tileSize * 2
 
 
 
@@ -331,10 +331,7 @@ renderTile bright viewMatrix ( tileX, tileY ) tt =
         Empty ->
             []
 
-        Slope left right ->
-            []
-
-        Full ->
+        _ ->
             let
                 size =
                     toFloat tileSize
