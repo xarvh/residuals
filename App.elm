@@ -173,14 +173,10 @@ snapDownToTile v =
 tileCollision : Size -> Vec -> ( Int, Int ) -> Vec
 tileCollision size position ( dX, dY ) =
     let
-        -- ideal new position
+        -- X
         idealX =
             position.x + dX
 
-        idealY =
-            position.y + dY
-
-        -- aabb
         left =
             idealX - size.width // 2
 
@@ -188,10 +184,10 @@ tileCollision size position ( dX, dY ) =
             idealX + size.width // 2
 
         top =
-            idealY + size.height // 2
+            position.y + size.height // 2
 
         bottom =
-            idealY - size.height // 2
+            position.y - size.height // 2
 
         newX =
             if dX < 0 && tilesFromBottomToTop left bottom top then
@@ -201,11 +197,27 @@ tileCollision size position ( dX, dY ) =
             else
                 idealX
 
+        -- Y
+        idealY =
+            position.y + dY
+
+        newTop =
+            idealY + size.height // 2
+
+        newBottom =
+            idealY - size.height // 2
+
+        newLeft =
+            newX - size.width // 2
+
+        newRight =
+            newX + size.width // 2
+
         newY =
-            if dY < 0 && tilesFromLeftToRight left right bottom then
-                snapDownToTile (bottom + tileSize) + size.height // 2
-            else if dY > 0 && tilesFromLeftToRight left right top then
-                snapDownToTile top - size.height // 2 - 1
+            if dY < 0 && tilesFromLeftToRight newLeft newRight newBottom then
+                snapDownToTile (newBottom + tileSize) + size.height // 2
+            else if dY > 0 && tilesFromLeftToRight newLeft newRight newTop then
+                snapDownToTile newTop - size.height // 2 - 1
             else
                 idealY
     in
