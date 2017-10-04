@@ -1,7 +1,7 @@
 module Primitives exposing (..)
 
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import WebGL exposing (Mesh, Shader)
 
 
@@ -49,8 +49,8 @@ fragmentShader =
 -- Tris
 
 
-trisVertices : List Vec3
-trisVertices =
+triangleVertices : List Vec3
+triangleVertices =
     let
         top =
             1
@@ -76,19 +76,62 @@ trisVertices =
         c =
             vec3 left bottom 0
     in
-        [ a, b, c ]
+    [ a, b, c ]
 
 
-trisMesh : Mesh MeshVertex
-trisMesh =
-    trisVertices
+triangleMesh : Mesh MeshVertex
+triangleMesh =
+    triangleVertices
         |> List.map MeshVertex
         |> WebGL.triangleFan
 
 
-tris : Uniforms -> WebGL.Entity
-tris uniforms =
-    WebGL.entity vertexShader fragmentShader trisMesh uniforms
+triangle : Uniforms -> WebGL.Entity
+triangle uniforms =
+    WebGL.entity vertexShader fragmentShader triangleMesh uniforms
+
+
+
+-- Right Triangle
+
+
+rightTriangleVertices : List Vec3
+rightTriangleVertices =
+    let
+        top =
+            0.5
+
+        bottom =
+            -top
+
+        right =
+            0.5
+
+        left =
+            -right
+
+        a =
+            vec3 left bottom 0
+
+        b =
+            vec3 left top 0
+
+        c =
+            vec3 right bottom 0
+    in
+    [ a, b, c ]
+
+
+rightTriangleMesh : Mesh MeshVertex
+rightTriangleMesh =
+    rightTriangleVertices
+        |> List.map MeshVertex
+        |> WebGL.triangleFan
+
+
+rightTriangle : Uniforms -> WebGL.Entity
+rightTriangle uniforms =
+    WebGL.entity vertexShader fragmentShader rightTriangleMesh uniforms
 
 
 
@@ -125,7 +168,7 @@ quadVertices =
         d =
             vec3 left bottom 0
     in
-        [ a, b, c, d ]
+    [ a, b, c, d ]
 
 
 quadMesh : Mesh MeshVertex
@@ -156,9 +199,9 @@ icosagonVertices =
         indexToVertex index =
             let
                 angle =
-                    (turns 1) * toFloat index / n
+                    turns 1 * toFloat index / n
             in
-                vec3 (half * cos angle) (half * sin angle) 0
+            vec3 (half * cos angle) (half * sin angle) 0
 
         perimeter =
             -- range is inclusive, so the first point will be repeated
@@ -167,7 +210,7 @@ icosagonVertices =
         fan =
             vec3 0 0 0 :: perimeter
     in
-        fan
+    fan
 
 
 icosagonMesh : Mesh MeshVertex

@@ -340,7 +340,39 @@ renderTile bright viewMatrix ( tileX, tileY ) tt =
         Empty ->
             []
 
-        _ ->
+        Slope leftHeight rightHeight ->
+            let
+                rotation =
+                    if leftHeight > rightHeight then
+                        0
+                    else
+                        turns 0.25
+
+                size =
+                    toFloat tileSize
+
+                x =
+                    toFloat tileX + 0.5
+
+                y =
+                    toFloat tileY + 0.5
+            in
+            [ Primitives.rightTriangle
+                { color =
+                    if List.member { x = tileX, y = tileY } bright then
+                        0.8
+                    else
+                        0.3
+                , transform =
+                    Mat4.identity
+                        |> Mat4.scale3 size size 1
+                        |> Mat4.translate3 x y 0
+                        |> Mat4.rotate rotation (vec3 0 0 1)
+                        |> Mat4.mul viewMatrix
+                }
+            ]
+
+        Full ->
             let
                 size =
                     toFloat tileSize
