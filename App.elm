@@ -167,13 +167,26 @@ type alias Size =
     }
 
 
-tilesFromBottomToTop x bottom top =
-    if bottom > top then
-        False
-    else if getTileAt x bottom /= Empty then
-        True
-    else
-        tilesFromBottomToTop x (bottom + tileSize) top
+scanVerticalTiles : Int -> Int -> Int -> List (Int, Int)
+scanVerticalTiles x bottomY topY =
+  let
+    tileX = x // tileSize
+
+    initialTileY = bottomY // tileSize
+
+    recur tileY =
+      if tileY * tileSize > topY then
+        []
+      else
+        (tileX, tileY) :: recur (tileY + 1)
+  in
+      recur initialTileY
+
+hasVerticalObstacle : Int -> Int -> Int -> Bool
+hasVerticalObstacle x bottom top =
+      scanVerticalTiles x bottom top
+        |> List.map (\(x, y) -> getTileByIndices x y /= Empty)
+        |> List.any identity
 
 
 tilesFromLeftToRight left right y =
@@ -209,9 +222,9 @@ tileCollision size position ( dX, dY ) =
             position.y - size.height // 2
 
         newX =
-            if dX < 0 && tilesFromBottomToTop left bottom top then
+            if dX < 0 && hasVerticalObstacle left bottom top then
                 snapDownToTile (left + tileSize) + size.width // 2
-            else if dX > 0 && tilesFromBottomToTop right bottom top then
+            else if dX > 0 && hasVerticalObstacle right bottom top then
                 snapDownToTile right - size.width // 2 - 1
             else
                 idealX
