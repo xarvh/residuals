@@ -3,7 +3,6 @@ module App exposing (..)
 --
 
 import AnimationFrame
-import Collision exposing (Collision)
 import Html exposing (Html)
 import Html.Attributes
 import Input
@@ -23,8 +22,11 @@ import WebGL
 -- Globals
 
 
-heroRadius =
+heroWidth =
     0.1
+
+heroHeight =
+    0.2
 
 
 
@@ -34,7 +36,6 @@ heroRadius =
 type alias Hero =
     { position : Vec2
     , velocity : Vec2
-    , maybeCollision : Maybe Collision
     }
 
 
@@ -60,7 +61,6 @@ initHero : Hero
 initHero =
     { position = vec2 0 0
     , velocity = vec2 0 0
-    , maybeCollision = Nothing
     }
 
 
@@ -87,6 +87,7 @@ init =
 -- update
 
 
+{-
 obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe Collision
 obsHeroCollision start end o =
     let
@@ -108,6 +109,7 @@ heroCollisions c d obstacles =
     obstacles
         |> List.filterMap (obsHeroCollision c d)
         |> List.head
+-}
 
 
 updateHero : Time -> Input.State -> List Obstacle -> Hero -> Hero
@@ -117,9 +119,9 @@ updateHero dt inputState obstacles hero =
             0.000001
 
         gravity =
-            thrust / 2
+            --thrust / 2
+            0
 
-        --0
         drag =
             0.03
 
@@ -140,29 +142,12 @@ updateHero dt inputState obstacles hero =
         newPosition =
             Vec2.add hero.position (Vec2.scale dt newVelocity)
 
-        maybeCollision =
-            heroCollisions hero.position newPosition obstacles
-
         ( fixedPosition, fixedVelocity ) =
-            case maybeCollision of
-                Nothing ->
-                    ( newPosition, newVelocity )
-
-                Just collision ->
-                    --                     ( newPosition, newVelocity )
-                    ( collision.position
-                      -- remove velocity component perpendicular to the surface
-                    , Vec2.scale (Vec2.dot newVelocity collision.parallel) collision.parallel
-                    )
+            ( newPosition, newVelocity )
     in
     { hero
         | position = fixedPosition
         , velocity = fixedVelocity
-        , maybeCollision =
-            if maybeCollision == Nothing then
-                hero.maybeCollision
-            else
-                maybeCollision
     }
 
 
@@ -198,20 +183,19 @@ update msg model =
 renderHero : Mat4 -> Hero -> List WebGL.Entity
 renderHero viewMatrix hero =
     let
-        size =
-            heroRadius * 2
-
         uniforms =
             { color = 0
             , transform =
                 Mat4.identity
                     |> Mat4.translate3 (Vec2.getX hero.position) (Vec2.getY hero.position) 0
                     |> Mat4.rotate 0 (vec3 0 0 1)
-                    |> Mat4.scale3 size size 1
+                    |> Mat4.scale3 heroWidth heroHeight 1
                     |> Mat4.mul viewMatrix
             }
 
         coll =
+            []
+            {-
             case hero.maybeCollision of
                 Nothing ->
                     []
@@ -238,8 +222,9 @@ renderHero viewMatrix hero =
                                 |> Mat4.mul viewMatrix
                         }
                     ]
+            -}
     in
-    [ Primitives.icosagon uniforms
+    [ Primitives.quad uniforms
     ]
         ++ coll
 
