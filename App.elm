@@ -167,35 +167,31 @@ type alias Size =
     }
 
 
-scanVerticalTiles : Int -> Int -> Int -> List (Int, Int)
-scanVerticalTiles x bottomY topY =
-  let
-    tileX = x // tileSize
+scanTiles : Int -> Int -> List Int
+scanTiles start end =
+    let
+        initialTileIndex =
+            start // tileSize
 
-    initialTileY = bottomY // tileSize
+        recur tileIndex =
+            if tileIndex * tileSize > end then
+                []
+            else
+                tileIndex :: recur (tileIndex + 1)
+    in
+    recur initialTileIndex
 
-    recur tileY =
-      if tileY * tileSize > topY then
-        []
-      else
-        (tileX, tileY) :: recur (tileY + 1)
-  in
-      recur initialTileY
 
 hasVerticalObstacle : Int -> Int -> Int -> Bool
 hasVerticalObstacle x bottom top =
-      scanVerticalTiles x bottom top
-        |> List.map (\(x, y) -> getTileByIndices x y /= Empty)
-        |> List.any identity
+    scanTiles bottom top
+        |> List.any (\tileY -> getTileByIndices (x // tileSize) tileY /= Empty)
 
 
-tilesFromLeftToRight left right y =
-    if left > right then
-        False
-    else if getTileAt left y /= Empty then
-        True
-    else
-        tilesFromLeftToRight (left + tileSize) right y
+hasHorizontalObstacle : Int -> Int -> Int -> Bool
+hasHorizontalObstacle left right y =
+    scanTiles left right
+        |> List.any (\tileX -> getTileByIndices tileX (y // tileSize) /= Empty)
 
 
 snapDownToTile v =
@@ -246,9 +242,9 @@ tileCollision size position ( dX, dY ) =
             newX + size.width // 2
 
         newY =
-            if dY < 0 && tilesFromLeftToRight newLeft newRight newBottom then
+            if dY < 0 && hasHorizontalObstacle newLeft newRight newBottom then
                 snapDownToTile (newBottom + tileSize) + size.height // 2
-            else if dY > 0 && tilesFromLeftToRight newLeft newRight newTop then
+            else if dY > 0 && hasHorizontalObstacle newLeft newRight newTop then
                 snapDownToTile newTop - size.height // 2 - 1
             else
                 idealY
