@@ -331,7 +331,28 @@ renderHero viewMatrix hero =
                 |> Mat4.scale3 (toFloat heroWidth) (toFloat heroHeight) 1
                 |> Mat4.mul viewMatrix
         }
+    , Primitives.icosagon
+        { color = 0.8
+        , transform =
+            Mat4.identity
+                |> Mat4.translate3 (toFloat x) (toFloat y) 0
+                |> Mat4.scale3 (toFloat heroWidth) (toFloat heroHeight) 1
+                |> Mat4.translate3 0.5 0.35 0
+                |> Mat4.scale3 0.7 0.3 1
+                |> Mat4.mul viewMatrix
+        }
+    , Primitives.icosagon
+        { color = 0.2
+        , transform =
+            Mat4.identity
+                |> Mat4.translate3 (toFloat x) (toFloat y) 0
+                |> Mat4.scale3 (toFloat heroWidth) (toFloat heroHeight) 1
+                |> Mat4.translate3 0.6 0.35 0
+                |> Mat4.scale3 0.4 0.2 1
+                |> Mat4.mul viewMatrix
+        }
     ]
+      |> List.reverse
 
 
 renderTile : List Vec -> Mat4 -> ( Int, Int ) -> Tile -> List WebGL.Entity
