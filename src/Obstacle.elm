@@ -1,15 +1,13 @@
 module Obstacle exposing (..)
 
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
-import Math.Matrix4 as Mat4 exposing (Mat4)
-import WebGL
-
-
 --
 
 import Math
+import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector2 as Vec2 exposing (Vec2, vec2)
+import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Primitives
+import WebGL
 
 
 -- types
@@ -32,9 +30,9 @@ vertices obstacle =
                 |> Mat4.rotate obstacle.angle (vec3 0 0 1)
                 |> Mat4.scale3 obstacle.width obstacle.height 1
     in
-        Primitives.quadVertices
-            |> List.map (Mat4.transform transform)
-            |> List.map (\v -> vec2 (Vec3.getX v) (Vec3.getY v))
+    Primitives.quadVertices
+        |> List.map (Mat4.transform transform)
+        |> List.map (\v -> vec2 (Vec3.getX v) (Vec3.getY v))
 
 
 render : Mat4 -> Float -> Obstacle -> WebGL.Entity
@@ -50,4 +48,4 @@ render viewMatrix color obstacle =
                     |> Mat4.mul viewMatrix
             }
     in
-        Primitives.quad uniforms
+    Primitives.quad uniforms

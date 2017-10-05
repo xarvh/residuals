@@ -3,6 +3,7 @@ module App exposing (..)
 --
 
 import AnimationFrame
+import Collision
 import Html exposing (Html)
 import Html.Attributes
 import Input
@@ -24,6 +25,7 @@ import WebGL
 
 heroWidth =
     0.1
+
 
 heroHeight =
     0.2
@@ -87,68 +89,69 @@ init =
 -- update
 
 
-{-
-obsHeroCollision : Vec2 -> Vec2 -> Obstacle -> Maybe Collision
-obsHeroCollision start end o =
-    let
-        ( a, b, c, d ) =
-            case Obstacle.vertices o of
-                [ a, b, c, d ] ->
-                    ( a, b, c, d )
-
-                _ ->
-                    Debug.crash "vertices"
-    in
-    [ ( a, b ), ( b, c ), ( c, d ), ( d, a ) ]
-        |> List.filterMap (\t -> Collision.pointToSegment heroRadius t ( start, end ))
-        |> List.head
-
-
-heroCollisions : Vec2 -> Vec2 -> List Obstacle -> Maybe Collision
-heroCollisions c d obstacles =
-    obstacles
-        |> List.filterMap (obsHeroCollision c d)
-        |> List.head
--}
-
-
 updateHero : Time -> Input.State -> List Obstacle -> Hero -> Hero
 updateHero dt inputState obstacles hero =
     let
-        thrust =
-            0.000001
+        {-
+           thrust =
+               0.000001
 
-        gravity =
-            --thrust / 2
-            0
+           gravity =
+               --thrust / 2
+               0
 
-        drag =
-            0.03
+           drag =
+               0.03
 
-        thrustAcceleration =
+           thrustAcceleration =
+               inputState.move
+                   |> Math.clampToLength 1.0
+                   |> Vec2.scale thrust
+
+           gravityAcceleration =
+               vec2 0 -gravity
+
+           a =
+               Vec2.add gravityAcceleration thrustAcceleration
+
+           newVelocity =
+               Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
+        -}
+        obstaclesAsPolygons =
+            obstacles |> List.map Obstacle.vertices
+
+        speed =
+            0.002
+
+        velocity =
             inputState.move
                 |> Math.clampToLength 1.0
-                |> Vec2.scale thrust
+                |> Vec2.scale speed
 
-        gravityAcceleration =
-            vec2 0 -gravity
+        idealPosition =
+            Vec2.add hero.position (Vec2.scale dt velocity)
 
-        a =
-            Vec2.add gravityAcceleration thrustAcceleration
+        maybeFixedPosition =
+            Collision.rightCollision heroHeight hero.position idealPosition obstaclesAsPolygons
 
-        newVelocity =
-            Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
-
-        newPosition =
-            Vec2.add hero.position (Vec2.scale dt newVelocity)
-
-        ( fixedPosition, fixedVelocity ) =
-            ( newPosition, newVelocity )
+        q =
+            if maybeFixedPosition /= Nothing then
+                let
+                    q =
+                        Debug.log "collision" maybeFixedPosition
+                in
+                0
+            else
+                0
     in
     { hero
-        | position = fixedPosition
-        , velocity = fixedVelocity
+        | position = maybeFixedPosition |> Maybe.withDefault idealPosition
+        , velocity = vec2 0 0
     }
+
+
+
+--
 
 
 updateFrame : Time -> Model -> Model
@@ -195,34 +198,35 @@ renderHero viewMatrix hero =
 
         coll =
             []
-            {-
-            case hero.maybeCollision of
-                Nothing ->
-                    []
 
-                Just collision ->
-                    [ Primitives.icosagon
-                        { color = 0.5
-                        , transform =
-                            Mat4.identity
-                                |> Mat4.translate3 (Vec2.getX collision.position) (Vec2.getY collision.position) -1
-                                |> Mat4.scale3 0.01 0.01 1
-                                |> Mat4.mul viewMatrix
-                        }
-                    , let
-                        p =
-                            Vec2.add collision.position (Vec2.scale 0.03 collision.normal)
-                      in
-                      Primitives.tris
-                        { color = 0.5
-                        , transform =
-                            Mat4.identity
-                                |> Mat4.translate3 (Vec2.getX p) (Vec2.getY p) -1
-                                |> Mat4.scale3 0.01 0.01 1
-                                |> Mat4.mul viewMatrix
-                        }
-                    ]
-            -}
+        {-
+           case hero.maybeCollision of
+               Nothing ->
+                   []
+
+               Just collision ->
+                   [ Primitives.icosagon
+                       { color = 0.5
+                       , transform =
+                           Mat4.identity
+                               |> Mat4.translate3 (Vec2.getX collision.position) (Vec2.getY collision.position) -1
+                               |> Mat4.scale3 0.01 0.01 1
+                               |> Mat4.mul viewMatrix
+                       }
+                   , let
+                       p =
+                           Vec2.add collision.position (Vec2.scale 0.03 collision.normal)
+                     in
+                     Primitives.tris
+                       { color = 0.5
+                       , transform =
+                           Mat4.identity
+                               |> Mat4.translate3 (Vec2.getX p) (Vec2.getY p) -1
+                               |> Mat4.scale3 0.01 0.01 1
+                               |> Mat4.mul viewMatrix
+                       }
+                   ]
+        -}
     in
     [ Primitives.quad uniforms
     ]
