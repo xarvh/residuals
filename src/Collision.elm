@@ -16,23 +16,63 @@ type alias Polygon =
 -- helpers
 
 
-anyPoligonSegment : (( Vec2, Vec2 ) -> Bool) -> Polygon -> Bool
-anyPoligonSegment f poly =
+polygonToSegmentList : Polygon -> List ( Vec2, Vec2 )
+polygonToSegmentList polygon =
+    case polygon of
+        [] ->
+            []
+
+        v :: vs ->
+            List.map2 (,) polygon (List.append vs [ v ])
+
+
+
+-- Static polygon distance
+
+
+minimumDistancePolygonSegment : Polygon -> Vec2 -> Vec2 -> Float
+minimumDistancePolygonSegment polygon segmentNormal anySegmentVertex =
     let
-        a =
-            Array.fromList poly
-
-        get index =
-            Array.get (index % Array.length a) a |> Maybe.withDefault (vec2 0 0)
-
-        segments =
-            List.indexedMap (\index v -> ( get index, get (index + 1) )) poly
+        distanceFromAxis vertex =
+            Vec2.sub vertex anySegmentVertex
+                |> Vec2.dot segmentNormal
     in
-    List.any f segments
+    polygon
+        |> List.map distanceFromAxis
+        |> List.minimum
+        |> Maybe.withDefault 0
 
 
 
--- static polygon collision
+partialMinimumDistancePolygonPolygon : Polygon -> Polygon -> List (Vec2, Float)
+partialMinimumDistancePolygonPolygon p q =
+  let
+      -- TODO cache normal?
+      normalAndDistance (a, b) =
+        let
+            normal = Vec2.sub a b |> Math.rotate90 |> Vec2.normalize
+        in
+            (n, minimumDistancePolygonSegment q n a)
+  in
+    p
+        |> polygonToSegmentList
+        |> List.map normalAndDistance
+
+
+minimumDistancePolygonVsPolygon : Polygon -> Polygon -> Maybe (Vec2, Float)
+minimumDistancePolygonVsPolygon p q =
+  List.append
+    (partialMinimumDistancePolygonPolygon p q)
+    (partialMinimumDistancePolygonPolygon q p)
+    |> List.minimumBy Tuple.second
+
+
+
+-- Static polygon collision
+
+
+
+
 
 
 normalIsSeparatingAxis : Polygon -> ( Vec2, Vec2 ) -> Bool
@@ -52,7 +92,10 @@ halfCollision p q =
     -- https://www.toptal.com/game/video-game-physics-part-ii-collision-detection-for-solid-objects
     -- Try polygon p's normals as separating axies.
     -- If any of them does separe the polys, then the two polys are NOT intersecting
-    not <| anyPoligonSegment (normalIsSeparatingAxis q) p
+    p
+        |> polygonToSegmentList
+        |> List.any (normalIsSeparatingAxis q)
+        |> not
 
 
 collisionPolygonVsPolygon : Polygon -> Polygon -> Bool
