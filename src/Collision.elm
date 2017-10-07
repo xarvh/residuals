@@ -1,6 +1,7 @@
 module Collision exposing (..)
 
 import Array exposing (Array)
+import List.Extra
 import Math
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 
@@ -10,6 +11,12 @@ import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 
 type alias Polygon =
     List Vec2
+
+
+type alias Collision =
+    { direction : Vec2
+    , distance : Float
+    }
 
 
 
@@ -43,36 +50,39 @@ minimumDistancePolygonSegment polygon segmentNormal anySegmentVertex =
         |> Maybe.withDefault 0
 
 
-
-partialMinimumDistancePolygonPolygon : Polygon -> Polygon -> List (Vec2, Float)
+partialMinimumDistancePolygonPolygon : Polygon -> Polygon -> List Collision
 partialMinimumDistancePolygonPolygon p q =
-  let
-      -- TODO cache normal?
-      normalAndDistance (a, b) =
-        let
-            normal = Vec2.sub a b |> Math.rotate90 |> Vec2.normalize
-        in
-            (n, minimumDistancePolygonSegment q n a)
-  in
+    let
+        -- TODO cache normal?
+        normalAndDistance ( a, b ) =
+            let
+                normal =
+                    Vec2.sub a b |> Math.rotate90 |> Vec2.normalize
+            in
+            { direction = normal
+            , distance = minimumDistancePolygonSegment q normal a
+            }
+    in
     p
         |> polygonToSegmentList
         |> List.map normalAndDistance
 
 
-minimumDistancePolygonVsPolygon : Polygon -> Polygon -> Maybe (Vec2, Float)
+invertCollision : Collision -> Collision
+invertCollision collision =
+    { collision | direction = Vec2.negate collision.direction }
+
+
+minimumDistancePolygonVsPolygon : Polygon -> Polygon -> Maybe Collision
 minimumDistancePolygonVsPolygon p q =
-  List.append
-    (partialMinimumDistancePolygonPolygon p q)
-    (partialMinimumDistancePolygonPolygon q p)
-    |> List.minimumBy Tuple.second
+    List.append
+        (partialMinimumDistancePolygonPolygon p q |> List.map invertCollision)
+        (partialMinimumDistancePolygonPolygon q p)
+        |> List.Extra.minimumBy .distance
 
 
 
 -- Static polygon collision
-
-
-
-
 
 
 normalIsSeparatingAxis : Polygon -> ( Vec2, Vec2 ) -> Bool
@@ -107,7 +117,7 @@ collisionPolygonVsPolygon p q =
 --
 
 
-collideRightEdge : Float -> Vec2 -> Vec2 -> Polygon -> Bool
+collideRightEdge : Float -> Vec2 -> Vec2 -> Polygon -> Maybe Collision
 collideRightEdge height start end obstacle =
     let
         {-
@@ -140,7 +150,10 @@ collideRightEdge height start end obstacle =
         c =
             Vec2.sub end halfHeight
     in
-    collisionPolygonVsPolygon [ a, b, c, d ] obstacle
+    if collisionPolygonVsPolygon [ a, b, c, d ] obstacle then
+        minimumDistancePolygonVsPolygon [ a, b, c, d ] obstacle
+    else
+        Nothing
 
 
 {-| Binary search along the trajectory for the furthest point that does NOT collide
@@ -172,13 +185,12 @@ searchFurthestNonCollidingEnd remainingIterations isColliding ( start, end ) =
   - Assuming that every passed obstacle collides with the object's motion
 
 -}
-rightCollision : Float -> Vec2 -> Vec2 -> List Polygon -> Maybe Vec2
+rightCollision : Float -> Vec2 -> Vec2 -> List Polygon -> Maybe Collision
 rightCollision height start end obstacles =
-    let
-        isColliding s e =
-            List.any (\o -> collideRightEdge height s e o) obstacles
-    in
-    if Vec2.getX (Vec2.sub end start) > 0 && isColliding start end then
-        searchFurthestNonCollidingEnd 10 isColliding ( start, end ) |> Just
+    if Vec2.getX (Vec2.sub end start) > 0 then
+        obstacles
+            |> List.filterMap (\o -> collideRightEdge height start end o)
+            -- TODO: be smarter about multiple collisions
+            |> List.Extra.minimumBy .distance
     else
         Nothing

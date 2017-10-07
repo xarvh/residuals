@@ -131,21 +131,23 @@ updateHero dt inputState obstacles hero =
         idealPosition =
             Vec2.add hero.position (Vec2.scale dt velocity)
 
-        maybeFixedPosition =
+        maybeCollision =
             Collision.rightCollision heroHeight hero.position idealPosition obstaclesAsPolygons
 
-        q =
-            if maybeFixedPosition /= Nothing then
-                let
-                    q =
-                        Debug.log "collision" maybeFixedPosition
-                in
-                0
-            else
-                0
+        fixedPosition =
+            case maybeCollision of
+                Nothing ->
+                    idealPosition
+
+                Just collision ->
+                    let
+                        q =
+                            Debug.log "c" collision
+                    in
+                    Vec2.add idealPosition (Vec2.scale collision.distance collision.direction)
     in
     { hero
-        | position = maybeFixedPosition |> Maybe.withDefault idealPosition
+        | position = fixedPosition
         , velocity = vec2 0 0
     }
 
@@ -265,6 +267,8 @@ view : Model -> Html Msg
 view model =
     let
         viewMatrix =
+            -- TODO: copy the same api from tiles: worldToCameraMatrix should take the viewport size
+            -- and position
             Viewport.worldToCameraMatrix model.viewport
 
         hero =
