@@ -131,8 +131,16 @@ updateHero dt inputState obstacles hero =
         idealPosition =
             Vec2.add hero.position (Vec2.scale dt velocity)
 
+        heroAabb =
+            { center = hero.position
+            , width = heroWidth
+            , height = heroHeight
+            }
+
         maybeCollision =
-            Collision.rightCollision heroHeight hero.position idealPosition obstaclesAsPolygons
+            obstaclesAsPolygons
+                |> List.head
+                |> Maybe.andThen (Collision.mobVsObstacleCollisionResponse heroAabb (Vec2.sub idealPosition hero.position))
 
         fixedPosition =
             case maybeCollision of
