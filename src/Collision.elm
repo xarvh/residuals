@@ -165,15 +165,15 @@ collideRightEdge movingObjectAabb displacement obstacle =
             {-
                Sweeping the edge AD along the displacement gives us the quadrilateral ABCD
 
-                 A            B      A--B
+                -A            B     -A--B
                  |\          /|      |  |
                  | \        / |      |  |
-                 |  B      A  |      |  |
+                 |  B     -A  |      |  |
                  |  |      |  |      |  |
-                 D  |      |  C      D--C
+                -D  |      |  C     -D--C
                   \ |      | /
                    \|      |/
-                    C      D
+                    C     -D
             -}
             a =
                 Vec2.add start halfHeight
@@ -193,6 +193,74 @@ collideRightEdge movingObjectAabb displacement obstacle =
             Nothing
 
 
+collideLeftEdge : Aabb -> Vec2 -> List Vec2 -> Maybe Collision
+collideLeftEdge movingObjectAabb displacement obstacle =
+    if Vec2.getX displacement >= 0 then
+        Nothing
+    else
+        let
+            halfWidth =
+                vec2 (movingObjectAabb.width / 2) 0
+
+            halfHeight =
+                vec2 0 (movingObjectAabb.height / 2)
+
+            -- `start` and `end` refer the edge center
+            start =
+                Vec2.sub movingObjectAabb.center halfWidth
+
+            end =
+                Vec2.add start displacement
+
+            {-
+               Sweeping the edge BC along the displacement gives us the quadrilateral ABCD
+
+                 A            B-     A--B-
+                 |\          /|      |  |
+                 | \        / |      |  |
+                 |  B-     A  |      |  |
+                 |  |      |  |      |  |
+                 D  |      |  C-     D--C-
+                  \ |      | /
+                   \|      |/
+                    C-     D
+            -}
+            b =
+                Vec2.add start halfHeight
+
+            c =
+                Vec2.sub start halfHeight
+
+            a =
+                Vec2.add end halfHeight
+
+            d =
+                Vec2.sub end halfHeight
+        in
+        if collisionPolygonVsPolygon [ b, c, d, a ] obstacle then
+            polygonVsPolygonResponse [ b, c, d, a ] obstacle
+        else
+            Nothing
+
+
+maybeFirst : List (() -> Maybe b) -> Maybe b
+maybeFirst list =
+    case list of
+        [] ->
+            Nothing
+
+        x :: xs ->
+            case x () of
+                Just something ->
+                    Just something
+
+                Nothing ->
+                    maybeFirst xs
+
+
 mobVsObstacleCollisionResponse : Aabb -> Vec2 -> List Vec2 -> Maybe Collision
 mobVsObstacleCollisionResponse movingObjectAabb displacement obstacle =
-    collideRightEdge movingObjectAabb displacement obstacle
+    [ \_ -> collideRightEdge movingObjectAabb displacement obstacle
+    , \_ -> collideLeftEdge movingObjectAabb displacement obstacle
+    ]
+        |> maybeFirst

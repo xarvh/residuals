@@ -6,7 +6,7 @@ import Obstacle exposing (Obstacle)
 
 obstacles : List Obstacle
 obstacles =
-    [ { center = vec2 0 0, angle = 0, width = 1, height = 1 }
+    [ { center = vec2 0 0, angle = 10, width = 1, height = 1 }
     ]
 --     [ { center = vec2 0.3194192349910736 0.2704174220561981, angle = 0, width = 0.5000030000000001, height = 0.1 }
 --     , { center = vec2 -0.3520871102809906 -0.05263157933950424, angle = 0, width = 0.5000020000000001, height = 0.1 }
