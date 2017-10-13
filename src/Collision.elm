@@ -16,6 +16,13 @@ type alias Aabb =
     }
 
 
+type alias Obstacle =
+    { vertices : List Vec2
+
+    -- TODO: add id? normals? aabb?
+    }
+
+
 type alias SegmentWithNormal =
     { pointA : Vec2
     , pointB : Vec2
@@ -23,6 +30,11 @@ type alias SegmentWithNormal =
     }
 
 
+{-| TODO
+
+Should contain also the entity ids of the colliding entities
+
+-}
 type alias Collision =
     { direction : Vec2
     , distance : Float
@@ -31,6 +43,21 @@ type alias Collision =
 
 
 -- helpers
+
+
+maybeFirst : List (() -> Maybe b) -> Maybe b
+maybeFirst list =
+    case list of
+        [] ->
+            Nothing
+
+        x :: xs ->
+            case x () of
+                Just something ->
+                    Just something
+
+                Nothing ->
+                    maybeFirst xs
 
 
 polygonToSegments : List Vec2 -> List ( Vec2, Vec2 )
@@ -243,24 +270,49 @@ collideLeftEdge movingObjectAabb displacement obstacle =
             Nothing
 
 
-maybeFirst : List (() -> Maybe b) -> Maybe b
-maybeFirst list =
-    case list of
-        [] ->
-            Nothing
-
-        x :: xs ->
-            case x () of
-                Just something ->
-                    Just something
-
-                Nothing ->
-                    maybeFirst xs
-
-
 mobVsObstacleCollisionResponse : Aabb -> Vec2 -> List Vec2 -> Maybe Collision
 mobVsObstacleCollisionResponse movingObjectAabb displacement obstacle =
     [ \_ -> collideRightEdge movingObjectAabb displacement obstacle
     , \_ -> collideLeftEdge movingObjectAabb displacement obstacle
     ]
         |> maybeFirst
+
+
+{-| returns fixed displacement and a list of obstacle collided
+-}
+mobVsManyObstaclesCollisionResponse :
+    { displacementThreshold : Float
+    , movingObjectAabb : Aabb
+    , obstacles : List Obstacle
+    }
+    -> Int
+    -> ( Vec2, List Obstacle )
+    -> ( Vec2, List Obstacle )
+mobVsManyObstaclesCollisionResponse args remainingIterations ( displacement, previouslyHitObstacles ) =
+    if remainingIterations < 1 then
+        ( vec2 0 0, previouslyHitObstacles )
+    else if Vec2.squaredLength displacement < args.displacementThreshold * args.displacementThreshold then
+        ( vec2 0 0, previouslyHitObstacles )
+    else
+        let
+            lazyCollide : Obstacle -> unused -> Maybe ( Obstacle, Collision )
+            lazyCollide obstacle lazy =
+                mobVsObstacleCollisionResponse args.movingObjectAabb displacement obstacle.vertices
+                    |> Maybe.map ((,) obstacle)
+
+            maybeCollision =
+                args.obstacles
+                    |> List.map lazyCollide
+                    |> maybeFirst
+        in
+        case maybeCollision of
+            Nothing ->
+                ( displacement, previouslyHitObstacles )
+
+            Just ( obstacle, collision ) ->
+                let
+                    -- TODO correct displacement according to collision, ensure that new displacement is no longer than old one
+                    correctedDisplacement =
+                        displacement
+                in
+                mobVsManyObstaclesCollisionResponse args (remainingIterations - 1) ( correctedDisplacement, obstacle :: previouslyHitObstacles )
