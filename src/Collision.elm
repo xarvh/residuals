@@ -333,11 +333,59 @@ collideTopEdge movingObjectAabb displacement obstacle =
             Nothing
 
 
+collideBottomEdge : Aabb -> Vec2 -> List Vec2 -> Maybe Collision
+collideBottomEdge movingObjectAabb displacement obstacle =
+    if Vec2.getY displacement >= 0 then
+        Nothing
+    else
+        let
+            halfWidth =
+                vec2 (movingObjectAabb.width / 2) 0
+
+            halfHeight =
+                vec2 0 (movingObjectAabb.height / 2)
+
+            -- `start` and `end` refer the edge center
+            start =
+                Vec2.sub movingObjectAabb.center halfHeight
+
+            end =
+                Vec2.add start displacement
+
+            {-
+               Sweeping the edge DC along the displacement gives us the quadrilateral ABCD
+
+                   |   |   |   |      |   |
+                   D---C   D---C      D---C
+                  /   /     \   \     |   |
+                 /   /       \   \    |   |
+                A---B         A---B   A---B
+
+            -}
+            a =
+                Vec2.sub end halfWidth
+
+            b =
+                Vec2.add end halfWidth
+
+            c =
+                Vec2.add start halfWidth
+
+            d =
+                Vec2.sub start halfWidth
+        in
+        if collisionPolygonVsPolygon [ d, c, b, a ] obstacle then
+            polygonVsPolygonResponse [ d, c, b, a ] obstacle
+        else
+            Nothing
+
+
 mobVsObstacleCollisionResponse : Aabb -> Vec2 -> List Vec2 -> Maybe Collision
 mobVsObstacleCollisionResponse movingObjectAabb displacement obstacle =
     [ \_ -> collideRightEdge movingObjectAabb displacement obstacle
     , \_ -> collideLeftEdge movingObjectAabb displacement obstacle
     , \_ -> collideTopEdge movingObjectAabb displacement obstacle
+    , \_ -> collideBottomEdge movingObjectAabb displacement obstacle
     ]
         |> maybeFirst
 
