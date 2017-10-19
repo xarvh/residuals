@@ -6,6 +6,22 @@ import Math
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 
 
+-- meta
+
+
+logIf : Bool -> a -> b -> b
+logIf condition target pass =
+    let
+        throwAway =
+            if condition then
+                Debug.log "" target
+            else
+                target
+    in
+    pass
+
+
+
 -- types
 
 
@@ -278,6 +294,50 @@ mobVsObstacleCollisionResponse movingObjectAabb displacement obstacle =
         |> maybeFirst
 
 
+
+-- lazyCollide : Aabb -> Vec2 -> Obstacle -> unused -> Maybe ( Obstacle, Collision )
+-- lazyCollide aabb displacement obstacle lazy =
+--     mobVsObstacleCollisionResponse aabb displacement obstacle.vertices
+--         |> Maybe.map ((,) obstacle)
+{-
+   let
+       maybeCollision =
+           args.obstacles
+               |> List.map (lazyCollide args.movingObjectAabb displacement)
+               |> maybeFirst
+   in
+   case maybeCollision of
+       Nothing ->
+           ( displacement, previouslyHitObstacles )
+
+       Just ( obstacle, collision ) ->
+           let
+               -- TODO correct displacement according to collision, ensure that new displacement is no longer than old one
+
+               correctedDisplacement =
+                   Vec2.add displacement (Vec2.scale collision.distance collision.direction)
+
+
+               lazyCollide2 : Obstacle -> unused -> Maybe ( Obstacle, Collision )
+               lazyCollide2 obstacle lazy =
+                   mobVsObstacleCollisionResponse args.movingObjectAabb correctedDisplacement obstacle.vertices
+                       |> Maybe.map ((,) obstacle)
+
+               maybeCollision2 =
+                   args.obstacles
+                       |> List.map (lazyCollide args.movingObjectAabb correctedDisplacement)
+                       |> maybeFirst
+
+               q = case maybeCollision2 of
+                 Nothing -> collision
+                 Just (o2, c2) ->
+                   let r = Debug.log "-->" (displacement, correctedDisplacement, collision, c2)
+                   in collision
+           in
+               (correctedDisplacement, [obstacle])
+-}
+
+
 {-| returns fixed displacement and a list of obstacle collided
 -}
 mobVsManyObstaclesCollisionResponse :
@@ -291,7 +351,7 @@ mobVsManyObstaclesCollisionResponse :
 mobVsManyObstaclesCollisionResponse args remainingIterations ( displacement, previouslyHitObstacles ) =
     if remainingIterations < 1 then
         ( vec2 0 0, previouslyHitObstacles )
-    else if Vec2.squaredLength displacement < args.displacementThreshold * args.displacementThreshold then
+    else if Vec2.lengthSquared displacement < args.displacementThreshold * args.displacementThreshold then
         ( vec2 0 0, previouslyHitObstacles )
     else
         let
@@ -310,9 +370,12 @@ mobVsManyObstaclesCollisionResponse args remainingIterations ( displacement, pre
                 ( displacement, previouslyHitObstacles )
 
             Just ( obstacle, collision ) ->
-                let
-                    -- TODO correct displacement according to collision, ensure that new displacement is no longer than old one
-                    correctedDisplacement =
-                        displacement
-                in
-                mobVsManyObstaclesCollisionResponse args (remainingIterations - 1) ( correctedDisplacement, obstacle :: previouslyHitObstacles )
+                if collision.distance < args.displacementThreshold then
+                    ( displacement, previouslyHitObstacles )
+                else
+                    let
+                        -- TODO correct displacement according to collision, ensure that new displacement is no longer than old one
+                        correctedDisplacement =
+                            Vec2.add displacement (Vec2.scale collision.distance collision.direction)
+                    in
+                    mobVsManyObstaclesCollisionResponse args (remainingIterations - 1) ( correctedDisplacement, obstacle :: previouslyHitObstacles )

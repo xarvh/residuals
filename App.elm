@@ -61,7 +61,7 @@ type Msg
 
 initHero : Hero
 initHero =
-    { position = vec2 0 0
+    { position = vec2 -1 0
     , velocity = vec2 0 0
     }
 
@@ -118,7 +118,7 @@ updateHero dt inputState obstacles hero =
                Vec2.add (Vec2.scale (1 - drag) hero.velocity) (Vec2.scale dt a)
         -}
         obstaclesAsPolygons =
-            obstacles |> List.map Obstacle.vertices
+            obstacles |> List.map (Obstacle.vertices >> Collision.Obstacle)
 
         speed =
             0.002
@@ -128,8 +128,8 @@ updateHero dt inputState obstacles hero =
                 |> Math.clampToLength 1.0
                 |> Vec2.scale speed
 
-        idealPosition =
-            Vec2.add hero.position (Vec2.scale dt velocity)
+        idealDisplacement =
+            Vec2.scale dt velocity
 
         heroAabb =
             { center = hero.position
@@ -137,25 +137,20 @@ updateHero dt inputState obstacles hero =
             , height = heroHeight
             }
 
-        maybeCollision =
-            obstaclesAsPolygons
-                |> List.head
-                |> Maybe.andThen (Collision.mobVsObstacleCollisionResponse heroAabb (Vec2.sub idealPosition hero.position))
+        ( fixedDisplacement, collidedObstacles ) =
+            Collision.mobVsManyObstaclesCollisionResponse
+                { displacementThreshold = 0.001
+                , movingObjectAabb = heroAabb
+                , obstacles = obstaclesAsPolygons
+                }
+                10
+                ( idealDisplacement, [] )
 
-        fixedPosition =
-            case maybeCollision of
-                Nothing ->
-                    idealPosition
-
-                Just collision ->
-                    let
-                        q =
-                            Debug.log "c" collision
-                    in
-                    Vec2.add idealPosition (Vec2.scale collision.distance collision.direction)
+        newPosition =
+            Vec2.add hero.position fixedDisplacement
     in
     { hero
-        | position = fixedPosition
+        | position = newPosition
         , velocity = vec2 0 0
     }
 
@@ -291,8 +286,8 @@ view model =
             []
             [ Html.text "html,head,body { padding:0; margin:0; }"
             ]
-        , [ obstacles
-          , hero
+        , [ hero
+          , obstacles
           ]
             |> List.concat
             |> WebGL.toHtml
