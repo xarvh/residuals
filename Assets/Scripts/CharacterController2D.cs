@@ -7,7 +7,8 @@ public class CharacterController2D : MonoBehaviour {
 	[Range(0.0f, 10.0f)]
 	public float MoveSpeed = 3f;
 
-	public float JumpForce = 600f;
+	[Range(0.0f, 20.0f)]
+	public float JumpSpeed = 6f;
 
 	public LayerMask WhatIsGround;
 
@@ -38,12 +39,6 @@ public class CharacterController2D : MonoBehaviour {
 	}
 
 
-  void DoJump() {
-	  //Vy = 0f;
-	  Rigidbody.AddForce(new Vector2 (0, JumpForce));
-  }
-
-
 	// this is where most of the player controller magic happens each game event loop
 	void Update()
 	{
@@ -57,6 +52,17 @@ public class CharacterController2D : MonoBehaviour {
 		// WhatIsGround layer
 		IsGrounded = Physics2D.Linecast(Transform.position, GroundCheck.position, WhatIsGround);
 
+
+    // Jump
+    float vy = Rigidbody.velocity.y;
+    if (IsGrounded && InputJump) {
+      vy = Mathf.Max(vy, JumpSpeed);
+    }
+
+    // update rigidbody
+		Rigidbody.velocity = new Vector2(InputMoveX * MoveSpeed, vy);
+
+
 		// If the player stops jumping mid jump and player is not yet falling
 		// then set the vertical velocity to 0 (he will start to fall from gravity)
 		//if(Input.GetButtonUp("Jump") && Vy>0f)
@@ -64,12 +70,11 @@ public class CharacterController2D : MonoBehaviour {
 			//Vy = 0f;
 		//}
 
-    float vy = Rigidbody.velocity.y;
-		Rigidbody.velocity = new Vector2(InputMoveX * MoveSpeed, vy);
 
 		// if moving up then don't collide with platform layer
 		// this allows the player to jump up through things on the platform layer
 		// NOTE: requires the platforms to be on a layer named "Platform"
+    //
 		// TODO Physics2D.IgnoreLayerCollision(this.gameObject.layer, PlatformCollisionLayer, (vy > 0.0f));
 	}
 }

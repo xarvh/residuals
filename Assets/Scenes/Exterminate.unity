@@ -388,7 +388,7 @@ GameObject:
   - component: {fileID: 795877768}
   - component: {fileID: 795877767}
   - component: {fileID: 795877766}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Boulder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -830,10 +830,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveSpeed: 3
-  JumpForce: 600
+  JumpSpeed: 6
   WhatIsGround:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   GroundCheck: {fileID: 663220297}
 --- !u!1 &1831347586
 GameObject:
