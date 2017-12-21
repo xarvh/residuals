@@ -18,6 +18,7 @@ public class CharacterController2D : MonoBehaviour {
   // private stuff
 	float InputMoveX = 0;
 	bool InputJump = false;
+  bool InputRun = false;
 	Transform Transform;
 	Rigidbody2D Rigidbody;
 	int PlatformCollisionLayer;
@@ -33,7 +34,7 @@ public class CharacterController2D : MonoBehaviour {
 
 		// determine the platform's specified layer
 		PlatformCollisionLayer = LayerMask.NameToLayer("Platform");
-    Debug.Log(PlatformCollisionLayer);
+    //Debug.Log(PlatformCollisionLayer);
 	}
 
 
@@ -48,6 +49,8 @@ public class CharacterController2D : MonoBehaviour {
 	{
     InputMoveX = Input.GetAxisRaw("Horizontal");
     InputJump = Input.GetButtonDown("Jump");
+    InputRun = Input.GetButtonDown("Fire3");
+
 
 		// Check to see if character is grounded by raycasting from the middle of the player
 		// down to the GroundCheck position and see if collected with gameobjects on the
@@ -67,6 +70,6 @@ public class CharacterController2D : MonoBehaviour {
 		// if moving up then don't collide with platform layer
 		// this allows the player to jump up through things on the platform layer
 		// NOTE: requires the platforms to be on a layer named "Platform"
-		Physics2D.IgnoreLayerCollision(this.gameObject.layer, PlatformCollisionLayer, (vy > 0.0f));
+		// TODO Physics2D.IgnoreLayerCollision(this.gameObject.layer, PlatformCollisionLayer, (vy > 0.0f));
 	}
 }
