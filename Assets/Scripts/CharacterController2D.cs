@@ -4,11 +4,11 @@ using UnityEngine.SceneManagement; // include so we can load new scenes
 
 public class CharacterController2D : MonoBehaviour {
 
-  [Range(0.0f, 10.0f)]
-  public float MoveSpeed = 3f;
+  //[Range(0.0f, 10.0f)]
+  float MoveForce = 300f;
 
-  [Range(0.0f, 20.0f)]
-  public float JumpSpeed = 6f;
+  //[Range(0.0f, 20.0f)]
+  float JumpForce = 400f;
 
   public LayerMask WhatIsGround;
 
@@ -19,7 +19,7 @@ public class CharacterController2D : MonoBehaviour {
   // private stuff
   float InputMoveX = 0;
   bool InputJump = false;
-  bool InputRun = false;
+  bool InputVernier = false;
   Transform Transform;
   Rigidbody2D Rigidbody;
   int PlatformCollisionLayer;
@@ -39,12 +39,11 @@ public class CharacterController2D : MonoBehaviour {
   }
 
 
-  // this is where most of the player controller magic happens each game event loop
-  void Update()
+  void FixedUpdate()
   {
     InputMoveX = Input.GetAxisRaw("Horizontal");
     InputJump = Input.GetButtonDown("Jump");
-    InputRun = Input.GetButtonDown("Fire3");
+    InputVernier = Input.GetButtonDown("Fire3");
 
 
     // Check to see if character is grounded by raycasting from the middle of the player
@@ -52,15 +51,26 @@ public class CharacterController2D : MonoBehaviour {
     // WhatIsGround layer
     IsGrounded = Physics2D.Linecast(Transform.position, GroundCheck.position, WhatIsGround);
 
+    //float vx = Rigidbody.velocity.x;
+    //float vy = Rigidbody.velocity.y;
+
+    // Walk
+    //
+    // https://answers.unity.com/questions/191368/setting-maximum-speed-when-using-addforce.html
+    //
+    // https://unity3d.com/learn/tutorials/topics/2d-game-creation/creating-basic-platformer-game
+    //
+    if (IsGrounded) {
+      Rigidbody.AddForce(Transform.right * MoveForce * InputMoveX);
+    }
 
     // Jump
-    float vy = Rigidbody.velocity.y;
     if (IsGrounded && InputJump) {
-      vy = Mathf.Max(vy, JumpSpeed);
+      Rigidbody.AddForce(Transform.up * JumpForce);
     }
 
     // update rigidbody
-    Rigidbody.velocity = new Vector2(InputMoveX * MoveSpeed, vy);
+      //velocity = new Vector2(InputMoveX * MoveSpeed, vy);
 
 
     // If the player stops jumping mid jump and player is not yet falling
