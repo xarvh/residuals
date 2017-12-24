@@ -4,8 +4,8 @@ using UnityEngine.SceneManagement; // include so we can load new scenes
 
 public class CharacterController2D : MonoBehaviour {
 
-  //[Range(0.0f, 10.0f)]
-  float MoveForce = 300f;
+  //[Range(0.001f, 10.0f)]
+  float WalkMaximumSpeed = 2.5f;
 
   //[Range(0.0f, 20.0f)]
   float JumpForce = 400f;
@@ -51,35 +51,27 @@ public class CharacterController2D : MonoBehaviour {
     // WhatIsGround layer
     IsGrounded = Physics2D.Linecast(Transform.position, GroundCheck.position, WhatIsGround);
 
-    //float vx = Rigidbody.velocity.x;
+    float vx = Rigidbody.velocity.x;
     //float vy = Rigidbody.velocity.y;
 
     // Walk
-    //
-    // https://answers.unity.com/questions/191368/setting-maximum-speed-when-using-addforce.html
-    //
-    // https://unity3d.com/learn/tutorials/topics/2d-game-creation/creating-basic-platformer-game
-    //
     if (IsGrounded) {
-      Rigidbody.AddForce(Transform.right * MoveForce * InputMoveX);
+      float limiter =
+        vx * InputMoveX < 0
+        // acceleration is opposite to velocity, no limitation needed
+        ? InputMoveX
+        // acceleration will increase velocity, needs to be limited
+        : (1 - Mathf.Abs(vx) / WalkMaximumSpeed) * InputMoveX;
+
+      float walkForce = WalkMaximumSpeed * 4;
+
+      Rigidbody.AddForce(Transform.right * walkForce * limiter);
     }
 
     // Jump
     if (IsGrounded && InputJump) {
       Rigidbody.AddForce(Transform.up * JumpForce);
     }
-
-    // update rigidbody
-      //velocity = new Vector2(InputMoveX * MoveSpeed, vy);
-
-
-    // If the player stops jumping mid jump and player is not yet falling
-    // then set the vertical velocity to 0 (he will start to fall from gravity)
-    //if(Input.GetButtonUp("Jump") && Vy>0f)
-    //{
-      //Vy = 0f;
-    //}
-
 
     // if moving up then don't collide with platform layer
     // this allows the player to jump up through things on the platform layer
