@@ -1,80 +1,78 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
-using UnityEngine.SceneManagement; // include so we can load new scenes
+
 
 public class CharacterController2D : MonoBehaviour {
 
-  [Range(0.0f, 10.0f)]
-  public float MoveSpeed = 3f;
+  //
+  // API
+  //
+  [Range(0.1f, 10.0f)]
+  public float WalkMaximumSpeed = 4.5f;
 
-  [Range(0.0f, 20.0f)]
-  public float JumpSpeed = 6f;
+  [Range(1f, 900.0f)]
+  public float JumpForce = 300f;
 
-  public LayerMask WhatIsGround;
+  //
+  public GameObject GroundCheckObject;
+  GroundCheck GroundCheckScript;
 
-  // Transform just below feet for checking if player is grounded
-  public Transform GroundCheck;
-
-
-  // private stuff
+  //
+  // private
+  //
   float InputMoveX = 0;
   bool InputJump = false;
-  bool InputRun = false;
+  bool InputVernier = false;
   Transform Transform;
   Rigidbody2D Rigidbody;
-  int PlatformCollisionLayer;
-  bool IsGrounded = false;
 
 
+  //
+  // inherited
+  //
   void Awake () {
-    // get a reference to the components we are going to be changing and store a reference for efficiency purposes
     Transform = GetComponent<Transform>();
 
     Rigidbody = GetComponent<Rigidbody2D>();
-    if (Rigidbody == null) throw new System.ArgumentNullException("No Rigidbody2D");
+    Assert.IsNotNull(Rigidbody);
 
-    // determine the platform's specified layer
-    PlatformCollisionLayer = LayerMask.NameToLayer("Platform");
-    //Debug.Log(PlatformCollisionLayer);
+
+    Assert.IsNotNull(GroundCheckObject);
+    GroundCheckScript = GroundCheckObject.GetComponent<GroundCheck>();
+
+    Assert.IsNotNull(GroundCheckScript);
   }
 
 
-  // this is where most of the player controller magic happens each game event loop
-  void Update()
+  void FixedUpdate()
   {
     InputMoveX = Input.GetAxisRaw("Horizontal");
     InputJump = Input.GetButtonDown("Jump");
-    InputRun = Input.GetButtonDown("Fire3");
+    InputVernier = Input.GetButtonDown("Fire3");
 
+    bool isGrounded = GroundCheckScript.IsGrounded();
 
-    // Check to see if character is grounded by raycasting from the middle of the player
-    // down to the GroundCheck position and see if collected with gameobjects on the
-    // WhatIsGround layer
-    IsGrounded = Physics2D.Linecast(Transform.position, GroundCheck.position, WhatIsGround);
+    float vx = Rigidbody.velocity.x;
+    //float vy = Rigidbody.velocity.y;
 
+    // Walk
+    if (isGrounded) {
+      float limiter =
+        vx * InputMoveX < 0
+        // acceleration is opposite to velocity, no limitation needed
+        ? InputMoveX
+        // acceleration will increase velocity, needs to be limited
+        : (1 - Mathf.Abs(vx) / WalkMaximumSpeed) * InputMoveX;
 
-    // Jump
-    float vy = Rigidbody.velocity.y;
-    if (IsGrounded && InputJump) {
-      vy = Mathf.Max(vy, JumpSpeed);
+      float walkForce = WalkMaximumSpeed * 4;
+
+      Rigidbody.AddForce(Transform.right * walkForce * limiter);
     }
 
-    // update rigidbody
-    Rigidbody.velocity = new Vector2(InputMoveX * MoveSpeed, vy);
-
-
-    // If the player stops jumping mid jump and player is not yet falling
-    // then set the vertical velocity to 0 (he will start to fall from gravity)
-    //if(Input.GetButtonUp("Jump") && Vy>0f)
-    //{
-      //Vy = 0f;
-    //}
-
-
-    // if moving up then don't collide with platform layer
-    // this allows the player to jump up through things on the platform layer
-    // NOTE: requires the platforms to be on a layer named "Platform"
-    //
-    // TODO Physics2D.IgnoreLayerCollision(this.gameObject.layer, PlatformCollisionLayer, (vy > 0.0f));
+    // Jump
+    if (isGrounded && InputJump) {
+      Rigidbody.AddForce(Transform.up * JumpForce);
+    }
   }
 }
