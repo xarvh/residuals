@@ -10,11 +10,9 @@ public class CharacterController2D : MonoBehaviour {
   //[Range(0.0f, 20.0f)]
   float JumpForce = 400f;
 
-  public LayerMask WhatIsGround;
-
-  // Transform just below feet for checking if player is grounded
-  public Transform GroundCheck;
-
+  //
+  public GameObject GroundCheckObject;
+  GroundCheck GroundCheckScript;
 
   // private stuff
   float InputMoveX = 0;
@@ -23,7 +21,6 @@ public class CharacterController2D : MonoBehaviour {
   Transform Transform;
   Rigidbody2D Rigidbody;
   int PlatformCollisionLayer;
-  bool IsGrounded = false;
 
 
   void Awake () {
@@ -36,6 +33,10 @@ public class CharacterController2D : MonoBehaviour {
     // determine the platform's specified layer
     PlatformCollisionLayer = LayerMask.NameToLayer("Platform");
     //Debug.Log(PlatformCollisionLayer);
+
+    if (GroundCheckObject == null) throw new System.ArgumentNullException("No GroundCheck");
+    GroundCheckScript = GroundCheckObject.GetComponent<GroundCheck>();
+    if (GroundCheckScript == null) throw new System.ArgumentNullException("No GroundCheckScript");
   }
 
 
@@ -45,17 +46,21 @@ public class CharacterController2D : MonoBehaviour {
     InputJump = Input.GetButtonDown("Jump");
     InputVernier = Input.GetButtonDown("Fire3");
 
+    bool isGrounded = GroundCheckScript.IsGrounded();
 
-    // Check to see if character is grounded by raycasting from the middle of the player
-    // down to the GroundCheck position and see if collected with gameobjects on the
-    // WhatIsGround layer
-    IsGrounded = Physics2D.Linecast(Transform.position, GroundCheck.position, WhatIsGround);
+    /*
+    https://answers.unity.com/questions/1333301/visualize-boxcast-rect.html
+    IsGrounded = Physics2D.BoxCast(
+        Vector2.down
+        new Vector2(0.99, 0.01),
+        GroundLayerMask);
+    */
 
     float vx = Rigidbody.velocity.x;
     //float vy = Rigidbody.velocity.y;
 
     // Walk
-    if (IsGrounded) {
+    if (isGrounded) {
       float limiter =
         vx * InputMoveX < 0
         // acceleration is opposite to velocity, no limitation needed
@@ -69,7 +74,7 @@ public class CharacterController2D : MonoBehaviour {
     }
 
     // Jump
-    if (IsGrounded && InputJump) {
+    if (isGrounded && InputJump) {
       Rigidbody.AddForce(Transform.up * JumpForce);
     }
 
