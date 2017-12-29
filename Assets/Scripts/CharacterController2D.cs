@@ -1,42 +1,47 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
-using UnityEngine.SceneManagement; // include so we can load new scenes
+
 
 public class CharacterController2D : MonoBehaviour {
 
-  //[Range(0.001f, 10.0f)]
-  float WalkMaximumSpeed = 2.5f;
+  //
+  // API
+  //
+  [Range(0.1f, 10.0f)]
+  public float WalkMaximumSpeed = 4.5f;
 
-  //[Range(0.0f, 20.0f)]
-  float JumpForce = 400f;
+  [Range(1f, 900.0f)]
+  public float JumpForce = 300f;
 
   //
   public GameObject GroundCheckObject;
   GroundCheck GroundCheckScript;
 
-  // private stuff
+  //
+  // private
+  //
   float InputMoveX = 0;
   bool InputJump = false;
   bool InputVernier = false;
   Transform Transform;
   Rigidbody2D Rigidbody;
-  int PlatformCollisionLayer;
 
 
+  //
+  // inherited
+  //
   void Awake () {
-    // get a reference to the components we are going to be changing and store a reference for efficiency purposes
     Transform = GetComponent<Transform>();
 
     Rigidbody = GetComponent<Rigidbody2D>();
-    if (Rigidbody == null) throw new System.ArgumentNullException("No Rigidbody2D");
+    Assert.IsNotNull(Rigidbody);
 
-    // determine the platform's specified layer
-    PlatformCollisionLayer = LayerMask.NameToLayer("Platform");
-    //Debug.Log(PlatformCollisionLayer);
 
-    if (GroundCheckObject == null) throw new System.ArgumentNullException("No GroundCheck");
+    Assert.IsNotNull(GroundCheckObject);
     GroundCheckScript = GroundCheckObject.GetComponent<GroundCheck>();
-    if (GroundCheckScript == null) throw new System.ArgumentNullException("No GroundCheckScript");
+
+    Assert.IsNotNull(GroundCheckScript);
   }
 
 
@@ -47,14 +52,6 @@ public class CharacterController2D : MonoBehaviour {
     InputVernier = Input.GetButtonDown("Fire3");
 
     bool isGrounded = GroundCheckScript.IsGrounded();
-
-    /*
-    https://answers.unity.com/questions/1333301/visualize-boxcast-rect.html
-    IsGrounded = Physics2D.BoxCast(
-        Vector2.down
-        new Vector2(0.99, 0.01),
-        GroundLayerMask);
-    */
 
     float vx = Rigidbody.velocity.x;
     //float vy = Rigidbody.velocity.y;
@@ -77,11 +74,5 @@ public class CharacterController2D : MonoBehaviour {
     if (isGrounded && InputJump) {
       Rigidbody.AddForce(Transform.up * JumpForce);
     }
-
-    // if moving up then don't collide with platform layer
-    // this allows the player to jump up through things on the platform layer
-    // NOTE: requires the platforms to be on a layer named "Platform"
-    //
-    // TODO Physics2D.IgnoreLayerCollision(this.gameObject.layer, PlatformCollisionLayer, (vy > 0.0f));
   }
 }
