@@ -7,14 +7,19 @@ public class GroundCheck : MonoBehaviour {
 
   // public
   public LayerMask GroundLayerMask;
+  public LayerMask PlatformLayerMask;
 
   public bool IsGrounded() {
-    return EnteredGroundObjects.Count > 0;
+    return EnteredGroundObjects.Count > 0 || EnteredPlatformObjects.Count > 0;
   }
 
+  public bool IsGroundedOnPlatform() {
+    return EnteredGroundObjects.Count == 0 && EnteredPlatformObjects.Count > 0;
+  }
 
   // private
   HashSet<GameObject> EnteredGroundObjects = new HashSet<GameObject>();
+  HashSet<GameObject> EnteredPlatformObjects = new HashSet<GameObject>();
 
 
   // inherited
@@ -22,11 +27,19 @@ public class GroundCheck : MonoBehaviour {
     if (IsInLayerMask(other.gameObject.layer, GroundLayerMask)) {
       EnteredGroundObjects.Add(other.gameObject);
     }
+
+    if (IsInLayerMask(other.gameObject.layer, PlatformLayerMask)) {
+      EnteredPlatformObjects.Add(other.gameObject);
+    }
   }
 
   void OnTriggerExit2D(Collider2D other) {
     if (IsInLayerMask(other.gameObject.layer, GroundLayerMask)) {
       EnteredGroundObjects.Remove(other.gameObject);
+    }
+
+    if (IsInLayerMask(other.gameObject.layer, PlatformLayerMask)) {
+      EnteredPlatformObjects.Remove(other.gameObject);
     }
   }
 

@@ -519,7 +519,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GroundLayerMask:
     serializedVersion: 2
-    m_Bits: 768
+    m_Bits: 256
+  PlatformLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!4 &795877765
 Transform:
   m_ObjectHideFlags: 0
