@@ -12,7 +12,10 @@ public class CharacterController2D : MonoBehaviour {
   public float WalkMaximumSpeed = 4.5f;
 
   [Range(1f, 900.0f)]
-  public float JumpForce = 300f;
+  public float MaxJumpForceMagnitude = 300f;
+
+  [Range(0f, 5f)]
+  public float ExtraJumpOverBaseJumpRatio = 0.5f;
 
   // When a mecha passes through a one-way platform is still considered "grounded" and can jump.
   // This is why one-way platforms should be thin.
@@ -30,6 +33,7 @@ public class CharacterController2D : MonoBehaviour {
   // private
   //
   float InputMoveX = 0;
+  float InputMoveY = 0;
   bool InputJump = false;
   bool InputVernier = false;
   Transform Transform;
@@ -52,12 +56,15 @@ public class CharacterController2D : MonoBehaviour {
   }
 
 
-  void FixedUpdate()
-  {
+  void Update() {
     InputMoveX = Input.GetAxisRaw("Horizontal");
+    InputMoveY = Input.GetAxisRaw("Vertical");
     InputJump = Input.GetButton("Jump");
     InputVernier = Input.GetButton("Fire3");
+  }
 
+
+  void FixedUpdate() {
     bool isGrounded = GroundCheckScript.IsGrounded();
     bool isGroundedOnPlatform = GroundCheckScript.IsGroundedOnPlatform();
 
@@ -80,7 +87,27 @@ public class CharacterController2D : MonoBehaviour {
 
     // Jump
     if (isGrounded && InputJump && vy < maximumVerticalSpeedForJumping) {
-      Rigidbody.AddForce(Transform.up * JumpForce);
+      if (InputMoveY < 0) {
+        // TODO Jump down platform
+      } else {
+        //
+        // B: base force
+        // E: extra force
+        // R: ratio
+        //
+        // B + E = max force
+        // E / B = R
+        //
+
+        // B = max / (1 + R)
+        float baseMagnitude = MaxJumpForceMagnitude / (1 + ExtraJumpOverBaseJumpRatio);
+
+        float extraMagnitude = baseMagnitude * ExtraJumpOverBaseJumpRatio;
+
+        Vector3 extraDirection = Vector3.ClampMagnitude(new Vector3(InputMoveX, InputMoveY, 0), 1);
+
+        Rigidbody.AddForce(baseMagnitude * Transform.up + extraMagnitude * extraDirection);
+      }
     }
   }
 }

@@ -1142,7 +1142,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   WalkMaximumSpeed: 4.5
-  JumpForce: 300
+  MaxJumpForceMagnitude: 300
+  ExtraJumpOverBaseJumpRatio: 0.5
   GroundCheckObject: {fileID: 663220296}
 --- !u!1 &1831347586
 GameObject:
