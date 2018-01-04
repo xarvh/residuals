@@ -17,6 +17,17 @@ public class CharacterController2D : MonoBehaviour {
   [Range(0f, 5f)]
   public float ExtraJumpOverBaseJumpRatio = 0.5f;
 
+  // When a mecha passes through a one-way platform is still considered "grounded" and can jump.
+  // This is why one-way platforms should be thin.
+  // Still, if the player holds the jump button down AddForce will be called for every tick that the mecha is inside
+  // the platform, allowing ridiculaously high jumps.
+  //
+  // To work around this problem, we allow the mecha to jump only if its velocity in a particular direction is below this value.
+  //
+  // TODO: split between horizontal limit and vertical limit?
+  public float MaxSpeedForJumping = 0.5f;
+
+
   //
   public GameObject GroundCheckObject;
   GroundCheck GroundCheckScript;
@@ -100,25 +111,15 @@ public class CharacterController2D : MonoBehaviour {
 
         Vector3 force = baseMagnitude * Transform.up + extraMagnitude * extraDirection;
 
-        // When a mecha passes through a one-way platform is still considered "grounded" and can jump.
-        // This is why one-way platforms should be thin.
-        // Still, if the player holds the jump button down AddForce will be called for every tick that the mecha is inside
-        // the platform, allowing ridiculaously high jumps.
-        //
-        // To work around this problem, we allow the mecha to jump only if its velocity in a particular direction is below this value.
-        //
-        // TODO: split between horizontal limit and vertical limit?
-        float maxSpeedForJumping = WalkMaximumSpeed / 5.0f;
-
-        if (force.y > 0 && vy > maxSpeedForJumping) {
+        if (force.y > 0 && vy > MaxSpeedForJumping) {
           force.y = 0;
         }
 
-        if (force.x > 0 && vx > maxSpeedForJumping) {
+        if (force.x > 0 && vx > MaxSpeedForJumping) {
           force.x = 0;
         }
 
-        if (force.x < 0 && vx < -maxSpeedForJumping) {
+        if (force.x < 0 && vx < -MaxSpeedForJumping) {
           force.x = 0;
         }
 
