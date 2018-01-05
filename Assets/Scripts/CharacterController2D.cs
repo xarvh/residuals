@@ -62,7 +62,7 @@ public class CharacterController2D : MonoBehaviour {
   void Update() {
     InputMoveX = Input.GetAxisRaw("Horizontal");
     InputMoveY = Input.GetAxisRaw("Vertical");
-    InputJump = Input.GetButton("Jump");
+    InputJump = Input.GetButtonDown("Jump");
     InputVernier = Input.GetButton("Fire3");
   }
 
@@ -90,8 +90,14 @@ public class CharacterController2D : MonoBehaviour {
 
     // Jump
     if (isGrounded && InputJump) {
+      InputJump = false;
+
       if (InputMoveY < 0) {
-        // TODO Jump down platform
+        if (isGroundedOnPlatform && vy == 0) {
+
+          Transform.Translate(Vector3.down * 0.9f );
+
+        }
       } else {
         //
         // B: base force
