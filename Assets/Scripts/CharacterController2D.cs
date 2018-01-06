@@ -41,6 +41,8 @@ public class CharacterController2D : MonoBehaviour {
   bool InputVernier = false;
   Transform Transform;
   Rigidbody2D Rigidbody;
+  int PlayerDefaultLayer = -1;
+  int PlayerIgnorePlatformsLayer = -1;
 
   //
   // inherited
@@ -56,6 +58,10 @@ public class CharacterController2D : MonoBehaviour {
     GroundCheckScript = GroundCheckObject.GetComponent<GroundCheck>();
 
     Assert.IsNotNull(GroundCheckScript);
+
+    PlayerDefaultLayer = gameObject.layer;
+    PlayerIgnorePlatformsLayer = LayerMask.NameToLayer("Player Ignore Platforms");
+    Assert.AreNotEqual(PlayerIgnorePlatformsLayer, -1, "Invalid layer name");
   }
 
 
@@ -70,6 +76,10 @@ public class CharacterController2D : MonoBehaviour {
   void FixedUpdate() {
     bool isGrounded = GroundCheckScript.IsGrounded();
     bool isGroundedOnPlatform = GroundCheckScript.IsGroundedOnPlatform();
+
+    if (!isGroundedOnPlatform) {
+      gameObject.layer = PlayerDefaultLayer;
+    }
 
     float vx = Rigidbody.velocity.x;
     float vy = Rigidbody.velocity.y;
@@ -94,9 +104,7 @@ public class CharacterController2D : MonoBehaviour {
 
       if (InputMoveY < 0) {
         if (isGroundedOnPlatform && vy == 0) {
-
-          Transform.Translate(Vector3.down * 0.9f );
-
+          gameObject.layer = PlayerIgnorePlatformsLayer;
         }
       } else {
         //
