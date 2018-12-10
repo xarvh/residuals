@@ -6,6 +6,7 @@ import Game
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Json.Decode exposing (Decoder)
+import Map
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
@@ -25,28 +26,18 @@ type alias Flags =
 
 type alias Model =
     { viewportSize : PixelSize
-    , mousePosition : PixelPosition
-
-    --, clickPosition : PixelPosition
     , currentTimeInSeconds : Float
-    , position : Vec2
-    , velocity : Vec2
+    , player : Game.Player
     }
 
 
 type Msg
     = OnResize PixelSize
-    | OnMouseMove PixelPosition
-    | OnMouseClick
     | OnAnimationFrame Float
 
 
 
 -- Init
-
-
-worldSize =
-    10
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -57,13 +48,8 @@ init flags =
                 { width = 640
                 , height = 480
                 }
-            , mousePosition =
-                { top = 320
-                , left = 240
-                }
-            , position = vec2 0 0
-            , velocity = vec2 0 0
             , currentTimeInSeconds = 0
+            , player = Game.playerInit
             }
 
         cmd =
@@ -87,54 +73,19 @@ update msg model =
         OnResize size ->
             noCmd { model | viewportSize = size }
 
-        OnMouseMove position ->
-            noCmd { model | mousePosition = position }
-
-        OnMouseClick ->
-            let
-                clickPosition =
-                    Vec2.fromRecord <| Viewport.pixelToWorldUnits model.viewportSize worldSize model.mousePosition
-
-                velocity =
-                    Vec2.sub clickPosition model.position
-                        |> Vec2.scale 0.5
-            in
-            --noCmd { model | velocity = velocity }
-            noCmd { model | position = clickPosition }
-
         OnAnimationFrame dtInMilliseconds ->
             let
+                -- dt is in seconds
                 dt =
                     dtInMilliseconds / 1000
 
-                dp =
-                    Vec2.scale dt model.velocity
-
-                velocity =
-                    Vec2.scale (0.98 ^ dt) model.velocity
-
-                start =
-                    model.position
-
-                end =
-                    Vec2.add model.position dp
-
-                {-
-                ( fixedPosition, maybeCollision ) =
-                    TileCollision.collisions
-                        { hasBlockerAlong = Game.hasBlockerAlong
-                        , tileSize = Game.tileSize
-                        , mobSize = Game.mobSize
-                        , start = Game.vec2ints start
-                        , end = Game.vec2ints end
-                        }
-                -}
+                player =
+                    Game.playerThink dt model.player
             in
             noCmd
                 { model
-                    | currentTimeInSeconds = model.currentTimeInSeconds + dt / 1000
-                    , velocity = velocity
-                    --, position = Game.ints2vec fixedPosition
+                    | currentTimeInSeconds = model.currentTimeInSeconds + dt
+                    , player = player
                 }
 
 
@@ -147,13 +98,12 @@ view model =
     let
         entities =
             Scene.entities
-                { cameraToViewport = Viewport.worldToPixelTransform model.viewportSize worldSize
-                , mousePosition = Vec2.fromRecord <| Viewport.pixelToWorldUnits model.viewportSize worldSize model.mousePosition
-                , clickPosition = model.position
+                { cameraToViewport = Viewport.worldToPixelTransform model.viewportSize 10 --Map.worldSize
+                , player = model.player
                 , time = model.currentTimeInSeconds
                 }
     in
-    { title = "WebGL Scaffold"
+    { title = "Residuals of Humanity"
     , body =
         [ Viewport.toHtml model.viewportSize entities
         , Html.node "style" [] [ Html.text "body { margin: 0; }" ]
@@ -177,8 +127,9 @@ subscriptions model =
     Sub.batch
         [ Viewport.onWindowResize OnResize
         , Browser.Events.onAnimationFrameDelta OnAnimationFrame
-        , Browser.Events.onMouseMove mousePositionDecoder |> Sub.map OnMouseMove
-        , Browser.Events.onClick (Json.Decode.succeed OnMouseClick)
+
+        --, Browser.Events.onMouseMove mousePositionDecoder |> Sub.map OnMouseMove
+        --, Browser.Events.onClick (Json.Decode.succeed OnMouseClick)
         ]
 
 
