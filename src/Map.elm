@@ -17,12 +17,6 @@ worldSize =
     10
 
 
-mobSize =
-    { width = 0.5
-    , height = 1
-    }
-
-
 tilemapSrc =
     """
  #

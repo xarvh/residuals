@@ -6,6 +6,8 @@ import Game
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Json.Decode exposing (Decoder)
+import Keyboard
+import Keyboard.Arrows
 import Map
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
@@ -28,12 +30,14 @@ type alias Model =
     { viewportSize : PixelSize
     , currentTimeInSeconds : Float
     , player : Game.Player
+    , keys : List Keyboard.Key
     }
 
 
 type Msg
     = OnResize PixelSize
     | OnAnimationFrame Float
+    | OnKey Keyboard.Msg
 
 
 
@@ -50,6 +54,7 @@ init flags =
                 }
             , currentTimeInSeconds = 0
             , player = Game.playerInit
+            , keys = []
             }
 
         cmd =
@@ -73,6 +78,9 @@ update msg model =
         OnResize size ->
             noCmd { model | viewportSize = size }
 
+        OnKey keymsg ->
+            noCmd { model | keys = Keyboard.update keymsg model.keys }
+
         OnAnimationFrame dtInMilliseconds ->
             let
                 -- dt is in seconds
@@ -80,7 +88,7 @@ update msg model =
                     dtInMilliseconds / 1000
 
                 player =
-                    Game.playerThink dt model.player
+                    Game.playerThink dt (Keyboard.Arrows.arrows model.keys) model.player
             in
             noCmd
                 { model
@@ -127,6 +135,7 @@ subscriptions model =
     Sub.batch
         [ Viewport.onWindowResize OnResize
         , Browser.Events.onAnimationFrameDelta OnAnimationFrame
+        , Keyboard.subscriptions |> Sub.map OnKey
 
         --, Browser.Events.onMouseMove mousePositionDecoder |> Sub.map OnMouseMove
         --, Browser.Events.onClick (Json.Decode.succeed OnMouseClick)
