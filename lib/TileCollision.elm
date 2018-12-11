@@ -3,7 +3,8 @@ module TileCollision
         ( Args
         , BlockerDirections
         , Collision
-        , Tile
+        , CollisionTile
+        , Direction(..)
         , Vector
         , collide
         )
@@ -22,12 +23,6 @@ type alias Tiles =
 type alias Vector =
     { x : Pixels
     , y : Pixels
-    }
-
-
-type alias Tile =
-    { x : Tiles
-    , y : Tiles
     }
 
 
@@ -69,6 +64,13 @@ type alias BlockerDirections a =
     }
 
 
+type Direction
+    = PositiveDeltaX
+    | NegativeDeltaX
+    | PositiveDeltaY
+    | NegativeDeltaY
+
+
 type alias Args =
     { hasBlockerAlong : BlockerDirections (Int -> Int -> Bool)
     , tileSize : Int
@@ -81,7 +83,14 @@ type alias Args =
 type alias Collision =
     { point : Vector
     , fix : Vector
-    , tiles : List Tile
+    , tiles : List CollisionTile
+    }
+
+
+type alias CollisionTile =
+    { d : Direction
+    , x : Int
+    , y : Int
     }
 
 
@@ -171,11 +180,11 @@ sweepAlongX { tileSize, mobSize, start, end } =
             { halfWidth, halfHeight } =
                 mobSize
 
-            sign =
+            (sign, direction) =
                 if end.x > start.x then
-                    1
+                    (1, PositiveDeltaX)
                 else
-                    -1
+                    (-1, NegativeDeltaX)
 
             s =
                 { start | x = start.x + halfWidth * sign }
@@ -225,7 +234,7 @@ sweepAlongX { tileSize, mobSize, start, end } =
                 , fix = Vector (collisionX - halfWidth * sign) collisionY
                 , tiles =
                     tilesRangeInclusive tileSize (collisionY - halfHeight) (collisionY + halfHeight)
-                        |> List.map (Tile tileX)
+                        |> List.map (CollisionTile direction tileX)
                 }
 
             range =
@@ -318,11 +327,23 @@ flipWH { halfWidth, halfHeight } =
     }
 
 
-flipXY : { x : a, y : a } -> { x : a, y : a }
-flipXY { x, y } =
+flipVector : Vector -> Vector
+flipVector { x, y } =
     { x = y
     , y = x
     }
+
+flipCollisionTile : CollisionTile -> CollisionTile
+flipCollisionTile { d, x, y } =
+  { x = y
+  , y = x
+  , d =
+    case d of
+      PositiveDeltaX -> PositiveDeltaY
+      NegativeDeltaX -> NegativeDeltaY
+      PositiveDeltaY -> PositiveDeltaX
+      NegativeDeltaY -> NegativeDeltaX
+  }
 
 
 flipBlockers : BlockerDirections (Int -> Int -> Bool) -> BlockerDirections (Int -> Int -> Bool)
@@ -338,17 +359,17 @@ flipArgs : Args -> Args
 flipArgs args =
     { args
         | mobSize = flipWH args.mobSize
-        , start = flipXY args.start
-        , end = flipXY args.end
+        , start = flipVector args.start
+        , end = flipVector args.end
         , hasBlockerAlong = flipBlockers args.hasBlockerAlong
     }
 
 
 flipCollision : Collision -> Collision
 flipCollision collision =
-    { point = flipXY collision.point
-    , fix = flipXY collision.fix
-    , tiles = List.map flipXY collision.tiles
+    { point = flipVector collision.point
+    , fix = flipVector collision.fix
+    , tiles = List.map flipCollisionTile collision.tiles
     }
 
 

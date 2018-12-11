@@ -3,8 +3,8 @@ module TileCollision.Normalized
         ( Args
         , BlockerDirections
         , Collision
+        , CollisionTile
         , Size
-        , Tile
         , collide
         )
 
@@ -16,8 +16,8 @@ type alias BlockerDirections a =
     TileCollision.BlockerDirections a
 
 
-type alias Tile =
-    TileCollision.Tile
+type alias CollisionTile =
+    TileCollision.CollisionTile
 
 
 type alias Args =
@@ -32,7 +32,7 @@ type alias Args =
 type alias Collision =
     { point : Vec2
     , fix : Vec2
-    , tiles : List Tile
+    , tiles : List CollisionTile
     }
 
 

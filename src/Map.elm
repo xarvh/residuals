@@ -10,7 +10,7 @@ import TileCollision.Normalized exposing (BlockerDirections)
 
 
 type alias Tile =
-    TileCollision.Normalized.Tile
+    TileCollision.Normalized.CollisionTile
 
 
 worldSize =

@@ -2,7 +2,8 @@ module Game exposing (..)
 
 import Map
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import TileCollision.Normalized exposing (Size)
+import TileCollision exposing (Direction(..))
+import TileCollision.Normalized exposing (CollisionTile, Size)
 
 
 --
@@ -69,7 +70,6 @@ playerInit =
 playerThink : Float -> { x : Int, y : Int } -> Player -> Player
 playerThink dt input player =
     let
-        q = Debug.log "" input
         movementAcceleration =
             vec2 (toFloat input.x * baseAcceleration) (toFloat input.y * baseAcceleration)
 
@@ -99,12 +99,35 @@ playerThink dt input player =
                 , end = idealPosition
                 }
 
-        fixedPosition =
+        ( fixedPosition, fixedSpeed ) =
             case maybeCollision of
                 Nothing ->
-                    idealPosition
+                    (idealPosition, speed)
 
                 Just collision ->
-                    collision.fix
+                    ( collision.fix, fixSpeed collision.tiles speed )
     in
-    { player | position = fixedPosition, speed = speed }
+    { player | position = fixedPosition, speed = fixedSpeed |> Debug.log "spd"}
+
+
+fixSpeed : List CollisionTile -> Vec2 -> Vec2
+fixSpeed tiles speed =
+    let
+        sp tile ( x, y ) =
+            case tile.d of
+                PositiveDeltaX ->
+                    ( min 0 x, y )
+
+                NegativeDeltaX ->
+                    ( max 0 x, y )
+
+                PositiveDeltaY ->
+                    ( x, min 0 y )
+
+                NegativeDeltaY ->
+                    ( x, max 0 y )
+
+        ( xx, yy ) =
+            List.foldl sp ( Vec2.getX speed, Vec2.getY speed ) tiles
+    in
+    vec2 xx yy
