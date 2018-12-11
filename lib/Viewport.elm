@@ -72,24 +72,24 @@ pixelToWorldUnits pixelSize minimumContainedLength pixelPosition =
         { scaleX, scaleY } =
             worldToPixelScale pixelSize minimumContainedLength
     in
-    { x = toFloat pixelX * minimumContainedLength / toFloat pixelSize.width / scaleX
-    , y = toFloat pixelY * minimumContainedLength / toFloat pixelSize.height / scaleY
+    { x = toFloat pixelX * minimumContainedLength / (toFloat pixelSize.width * scaleX)
+    , y = toFloat pixelY * minimumContainedLength / (toFloat pixelSize.height * scaleY)
     }
 
 
-{-| TODO this is ignoring minimumContainedLength WTF!? -}
 worldToPixelScale : PixelSize -> Float -> { scaleX : Float, scaleY : Float }
 worldToPixelScale pixelSize minimumContainedLength =
     let
         minSize =
             min pixelSize.width pixelSize.height
     in
-    { scaleX = toFloat minSize / toFloat pixelSize.width
-    , scaleY = toFloat minSize / toFloat pixelSize.height
+    { scaleX = 2.0 * toFloat minSize / (toFloat pixelSize.width * minimumContainedLength)
+    , scaleY = 2.0 * toFloat minSize / (toFloat pixelSize.height * minimumContainedLength)
     }
 
 
-{-| TODO rename to cameraToViewport ? -}
+{-| TODO rename to cameraToViewport ?
+-}
 worldToPixelTransform : PixelSize -> Float -> Mat4
 worldToPixelTransform pixelSize minimumContainedLength =
     let
