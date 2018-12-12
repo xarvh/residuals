@@ -9,16 +9,6 @@ import TileCollision.Normalized exposing (CollisionTile, Size)
 --
 
 
-clampToRadius : Float -> Vec2 -> Vec2
-clampToRadius radius v =
-    let
-        ll =
-            Vec2.lengthSquared v
-    in
-    if ll <= radius * radius then
-        v
-    else
-        Vec2.scale (radius / sqrt ll) v
 
 
 
@@ -55,7 +45,7 @@ type alias Game =
 
 
 type alias Player =
-    { position : Vec2
+    { position : Vector
     , speed : Vec2
     }
 

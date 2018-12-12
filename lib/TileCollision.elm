@@ -5,11 +5,11 @@ module TileCollision
         , Collision
         , CollisionTile
         , Direction(..)
-        , Vector
         , collide
         )
 
 import List.Extra
+import Vector exposing (Vector)
 
 
 type alias Pixels =
@@ -18,12 +18,6 @@ type alias Pixels =
 
 type alias Tiles =
     Int
-
-
-type alias Vector =
-    { x : Pixels
-    , y : Pixels
-    }
 
 
 type alias Size =
@@ -96,22 +90,6 @@ type alias CollisionTile =
 
 
 --
-
-
-squaredDistance : Vector -> Vector -> Int
-squaredDistance a b =
-    let
-        dx =
-            a.x - b.x
-
-        dy =
-            a.y - b.y
-    in
-    dx * dx + dy * dy
-
-
-
---
 -- Trace all tiles swept by an horizontal movement ---------------------------
 --
 
@@ -180,11 +158,11 @@ sweepAlongX { tileSize, mobSize, start, end } =
             { halfWidth, halfHeight } =
                 mobSize
 
-            (sign, direction) =
+            ( sign, direction ) =
                 if end.x > start.x then
-                    (1, PositiveDeltaX)
+                    ( 1, PositiveDeltaX )
                 else
-                    (-1, NegativeDeltaX)
+                    ( -1, NegativeDeltaX )
 
             s =
                 { start | x = start.x + halfWidth * sign }
@@ -254,7 +232,7 @@ findClosestTo tileSize start l =
     let
         distance : Collision -> Int
         distance collision =
-            squaredDistance start collision.point
+            Vector.distanceSquared start collision.point
     in
     List.Extra.minimumBy distance l
 
@@ -333,17 +311,25 @@ flipVector { x, y } =
     , y = x
     }
 
+
 flipCollisionTile : CollisionTile -> CollisionTile
 flipCollisionTile { d, x, y } =
-  { x = y
-  , y = x
-  , d =
-    case d of
-      PositiveDeltaX -> PositiveDeltaY
-      NegativeDeltaX -> NegativeDeltaY
-      PositiveDeltaY -> PositiveDeltaX
-      NegativeDeltaY -> NegativeDeltaX
-  }
+    { x = y
+    , y = x
+    , d =
+        case d of
+            PositiveDeltaX ->
+                PositiveDeltaY
+
+            NegativeDeltaX ->
+                NegativeDeltaY
+
+            PositiveDeltaY ->
+                PositiveDeltaX
+
+            NegativeDeltaY ->
+                NegativeDeltaX
+    }
 
 
 flipBlockers : BlockerDirections (Int -> Int -> Bool) -> BlockerDirections (Int -> Int -> Bool)
@@ -416,7 +402,7 @@ collide args =
             Just <| resolveSecondaryCollisionAlongX collisionY args
 
         ( Just collisionX, Just collisionY ) ->
-            if squaredDistance args.start collisionX.fix < squaredDistance args.start collisionY.fix then
+            if Vector.distanceSquared args.start collisionX.fix < Vector.distanceSquared args.start collisionY.fix then
                 Just <| resolveSecondaryCollisionAlongY collisionX args
             else
                 Just <| resolveSecondaryCollisionAlongX collisionY args
