@@ -102,19 +102,19 @@ playerThink dt input player =
         ( fixedPosition, fixedSpeed ) =
             case maybeCollision of
                 Nothing ->
-                    (idealPosition, speed)
+                    ( idealPosition, speed )
 
                 Just collision ->
                     ( collision.fix, fixSpeed collision.tiles speed )
     in
-    { player | position = fixedPosition, speed = fixedSpeed |> Debug.log "spd"}
+    { player | position = fixedPosition, speed = fixedSpeed }
 
 
 fixSpeed : List CollisionTile -> Vec2 -> Vec2
 fixSpeed tiles speed =
     let
         sp tile ( x, y ) =
-            case tile.d of
+            case Debug.log "speedfix" tile.d of
                 PositiveDeltaX ->
                     ( min 0 x, y )
 

@@ -31,6 +31,7 @@ type alias Model =
     , currentTimeInSeconds : Float
     , player : Game.Player
     , keys : List Keyboard.Key
+    , pause : Bool
     }
 
 
@@ -55,6 +56,7 @@ init flags =
             , currentTimeInSeconds = 0
             , player = Game.playerInit
             , keys = []
+            , pause = False
             }
 
         cmd =
@@ -79,7 +81,12 @@ update msg model =
             noCmd { model | viewportSize = size }
 
         OnKey keymsg ->
-            noCmd { model | keys = Keyboard.update keymsg model.keys }
+            let
+                ( keys, maybeKeyChange ) =
+                    Keyboard.updateWithKeyChange Keyboard.anyKey keymsg model.keys
+            in
+            { model | keys = keys }
+                |> updateOnKeyChange maybeKeyChange
 
         OnAnimationFrame dtInMilliseconds ->
             let
@@ -95,6 +102,31 @@ update msg model =
                     | currentTimeInSeconds = model.currentTimeInSeconds + dt
                     , player = player
                 }
+
+
+updateOnKeyChange : Maybe Keyboard.KeyChange -> Model -> ( Model, Cmd Msg )
+updateOnKeyChange maybeKeyChange model =
+    case maybeKeyChange of
+        Just (Keyboard.KeyUp key) ->
+            case Debug.log "KEY" key of
+                Keyboard.Enter ->
+                    let
+                        ( m, c ) =
+                            update (OnAnimationFrame 20) model
+
+                        q =
+                            Debug.log "player" ( model.player.speed, m.player.speed )
+                    in
+                    ( m, c )
+
+                Keyboard.Character "p" ->
+                    noCmd { model | pause = not model.pause }
+
+                _ ->
+                    noCmd model
+
+        _ ->
+            noCmd model
 
 
 
@@ -134,7 +166,10 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Viewport.onWindowResize OnResize
-        , Browser.Events.onAnimationFrameDelta OnAnimationFrame
+        , if model.pause then
+            Sub.none
+          else
+            Browser.Events.onAnimationFrameDelta OnAnimationFrame
         , Keyboard.subscriptions |> Sub.map OnKey
 
         --, Browser.Events.onMouseMove mousePositionDecoder |> Sub.map OnMouseMove
