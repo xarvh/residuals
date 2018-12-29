@@ -57,7 +57,7 @@ lengthSquared { x, y } =
 
 length : Vector -> Float
 length =
-    lengthSquared >> sqrt
+    lengthSquared >> toFloat >> sqrt
 
 
 distanceSquared : Vector -> Vector -> Int
@@ -67,14 +67,14 @@ distanceSquared a b =
 
 distance : Vector -> Vector -> Float
 distance a b =
-    sub a b |> lengthSquared |> sqrt
+    sub a b |> lengthSquared |> toFloat |> sqrt
 
 
 clampToRadius : Float -> Vector -> Vector
 clampToRadius radius v =
     let
         ll =
-            Vec2.lengthSquared v |> toFloat
+            lengthSquared v |> toFloat
     in
     if ll <= radius * radius then
         v

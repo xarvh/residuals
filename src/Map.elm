@@ -1,20 +1,11 @@
 module Map exposing (..)
 
 import Dict exposing (Dict)
-import Math.Matrix4 as Mat4 exposing (Mat4)
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
-import Math.Vector4 as Vec4 exposing (Vec4, vec4)
-import Set exposing (Set)
-import TileCollision.Normalized exposing (BlockerDirections)
+import TileCollision exposing (BlockerDirections)
 
 
 type alias Tile =
-    TileCollision.Normalized.CollisionTile
-
-
-worldSize =
-    10
+    TileCollision.CollisionTile
 
 
 tilemapSrc =
@@ -25,19 +16,6 @@ tilemapSrc =
 ############### # #
 
 """
-
-
-
---
-
-
-tileCenter : Tile -> Vec2
-tileCenter tile =
-    vec2 (toFloat tile.x + 0.5) (toFloat tile.y + 0.5)
-
-
-
---
 
 
 charToBlockers : Char -> BlockerDirections Bool
@@ -73,6 +51,7 @@ charToBlockers char =
 
 
 type alias Tilemap =
+    -- TODO this is slow, replace with an Array?
     Dict ( Int, Int ) Char
 
 

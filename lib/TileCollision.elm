@@ -5,6 +5,7 @@ module TileCollision
         , Collision
         , CollisionTile
         , Direction(..)
+        , Size
         , collide
         )
 

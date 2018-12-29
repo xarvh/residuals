@@ -11,6 +11,7 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Obstacle
 import Quad
 import Set exposing (Set)
+import Vector exposing (Vector)
 import WebGL exposing (Entity, Mesh, Shader)
 
 
@@ -50,7 +51,6 @@ entities { cameraToViewport, time, player } =
     let
         worldToViewport =
             cameraToViewport
-                --|> Mat4.scale3 (1 / Map.worldSize) (1 / Map.worldSize) 1
 
         blockers =
             Map.tilemap
@@ -68,51 +68,61 @@ entities { cameraToViewport, time, player } =
         ]
 
 
-mob : Mat4 -> Vec2 -> Vec3 -> Entity
+mob : Mat4 -> Vector -> Vec3 -> Entity
 mob worldToViewport position color =
     let
         { x, y } =
-            Vec2.toRecord position
-
-        entityToViewport =
-            worldToViewport
-                |> Mat4.translate3 x y 0
-                |> Mat4.scale3 Game.playerSize.width Game.playerSize.height 1
-    in
-    Quad.entity entityToViewport color
-
-
-dot : Mat4 -> Vec2 -> Float -> Vec3 -> Entity
-dot worldToViewport position size color =
-    let
-        { x, y } =
-            Vec2.toRecord position
-
-        entityToViewport =
-            worldToViewport
-                |> Mat4.translate3 x y 0
-                |> Mat4.scale3 size size 1
-    in
-    Circle.entity entityToViewport color
-
-
-tileColor : Mat4 -> Tile -> Vec3 -> Entity
-tileColor worldToViewport tile color =
-    let
-        { x, y } =
-            tile
-                |> Map.tileCenter
+            position
+                |> Game.intToFloat
                 |> Vec2.toRecord
 
         entityToViewport =
             worldToViewport
                 |> Mat4.translate3 x y 0
+                |> Mat4.scale3
+                    (2 * toFloat Game.playerSize.halfWidth)
+                    (2 * toFloat Game.playerSize.halfHeight)
+                    1
     in
     Quad.entity entityToViewport color
 
 
+
+{-
+   dot : Mat4 -> Vector -> Float -> Vec3 -> Entity
+   dot worldToViewport position size color =
+       let
+           { x, y } =
+               position
+                 |> Game.intToFloat
+                 |> Vec2.toRecord
+
+           entityToViewport =
+               worldToViewport
+                   |> Mat4.translate3 x y 0
+                   |> Mat4.scale3 size size 1
+       in
+       Circle.entity entityToViewport color
+
+
+   tileColor : Mat4 -> Tile -> Vec3 -> Entity
+   tileColor worldToViewport tile color =
+       let
+           { x, y } =
+               tile
+                   |> Map.tileCenter
+                   |> Vec2.toRecord
+
+           entityToViewport =
+               worldToViewport
+                   |> Mat4.translate3 x y 0
+       in
+       Quad.entity entityToViewport color
+-}
+
+
 obstacleToEntity : Mat4 -> ( ( Int, Int ), Char ) -> List Entity
-obstacleToEntity worldToViewport ( ( x, y ), char ) =
+obstacleToEntity worldToViewport ( ( tileX, tileY ), char ) =
     let
         blockers =
             Map.charToBlockers char
@@ -124,11 +134,21 @@ obstacleToEntity worldToViewport ( ( x, y ), char ) =
             , ( .negativeDeltaX, -pi / 2 )
             ]
 
+        tileSize =
+          toFloat Game.tileSize
+
+        centerX =
+            (toFloat tileX + 0.5) * tileSize
+
+        centerY =
+            (toFloat tileY + 0.5) * tileSize
+
         stuff ( getter, angle ) =
             if getter blockers then
                 worldToViewport
-                    |> Mat4.translate3 (toFloat x + 0.5) (toFloat y + 0.5) 0
+                    |> Mat4.translate3 centerX centerY 0
                     |> Mat4.rotate angle (vec3 0 0 1)
+                    |> Mat4.scale3 tileSize tileSize 1
                     |> Obstacle.entity
                     |> Just
             else
