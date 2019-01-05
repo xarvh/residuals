@@ -77,6 +77,7 @@ type alias Args =
     , mobSize : Size
     , start : Vector
     , end : Vector
+    , bias : Float
     }
 
 
@@ -172,7 +173,7 @@ tilesRangeInclusive tileSize start end =
 
 
 sweepAlongX : Args -> List Collision
-sweepAlongX { tileSize, mobSize, start, end } =
+sweepAlongX { tileSize, mobSize, start, end, bias } =
     if end.x == start.x then
         []
     else
@@ -180,11 +181,11 @@ sweepAlongX { tileSize, mobSize, start, end } =
             { halfWidth, halfHeight } =
                 mobSize
 
-            (sign, direction) =
+            ( sign, direction ) =
                 if end.x > start.x then
-                    (1, PositiveDeltaX)
+                    ( 1, PositiveDeltaX )
                 else
-                    (-1, NegativeDeltaX)
+                    ( -1, NegativeDeltaX )
 
             s =
                 { start | x = start.x + halfWidth * sign }
@@ -231,7 +232,7 @@ sweepAlongX { tileSize, mobSize, start, end } =
                         trajectoryY collisionX
                 in
                 { point = Vector collisionX collisionY
-                , fix = Vector (collisionX - halfWidth * sign) collisionY
+                , fix = Vector (collisionX - (halfWidth + bias) * sign) collisionY
                 , tiles =
                     tilesRangeInclusive tileSize (collisionY - halfHeight) (collisionY + halfHeight)
                         |> List.map (CollisionTile direction tileX)
@@ -333,17 +334,25 @@ flipVector { x, y } =
     , y = x
     }
 
+
 flipCollisionTile : CollisionTile -> CollisionTile
 flipCollisionTile { d, x, y } =
-  { x = y
-  , y = x
-  , d =
-    case d of
-      PositiveDeltaX -> PositiveDeltaY
-      NegativeDeltaX -> NegativeDeltaY
-      PositiveDeltaY -> PositiveDeltaX
-      NegativeDeltaY -> NegativeDeltaX
-  }
+    { x = y
+    , y = x
+    , d =
+        case d of
+            PositiveDeltaX ->
+                PositiveDeltaY
+
+            NegativeDeltaX ->
+                NegativeDeltaY
+
+            PositiveDeltaY ->
+                PositiveDeltaX
+
+            NegativeDeltaY ->
+                NegativeDeltaX
+    }
 
 
 flipBlockers : BlockerDirections (Int -> Int -> Bool) -> BlockerDirections (Int -> Int -> Bool)
