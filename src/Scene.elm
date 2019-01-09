@@ -3,7 +3,7 @@ module Scene exposing (..)
 import Circle
 import Dict exposing (Dict)
 import Game exposing (..)
-import Map exposing (Tile)
+import Map
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
@@ -50,8 +50,8 @@ entities { cameraToViewport, time, player } =
     let
         worldToViewport =
             cameraToViewport
-                --|> Mat4.scale3 (1 / Map.worldSize) (1 / Map.worldSize) 1
 
+        --|> Mat4.scale3 (1 / Map.worldSize) (1 / Map.worldSize) 1
         blockers =
             Map.tilemap
                 |> Dict.toList
@@ -96,6 +96,7 @@ dot worldToViewport position size color =
     Circle.entity entityToViewport color
 
 
+{-
 tileColor : Mat4 -> Tile -> Vec3 -> Entity
 tileColor worldToViewport tile color =
     let
@@ -109,29 +110,26 @@ tileColor worldToViewport tile color =
                 |> Mat4.translate3 x y 0
     in
     Quad.entity entityToViewport color
+-}
 
 
 obstacleToEntity : Mat4 -> ( ( Int, Int ), Char ) -> List Entity
 obstacleToEntity worldToViewport ( ( x, y ), char ) =
     let
-        blockers =
-            Map.charToBlockers char
-
-        anglesAndBlockers =
-            [ ( .negativeDeltaY, 0 )
-            , ( .positiveDeltaY, pi )
-            , ( .positiveDeltaX, pi / 2 )
-            , ( .negativeDeltaX, -pi / 2 )
-            ]
-
-        stuff ( getter, angle ) =
-            if getter blockers then
-                worldToViewport
-                    |> Mat4.translate3 (toFloat x + 0.5) (toFloat y + 0.5) 0
-                    |> Mat4.rotate angle (vec3 0 0 1)
-                    |> Obstacle.entity
-                    |> Just
-            else
-                Nothing
+        sectorToEntity s =
+            worldToViewport
+                |> Mat4.translate3 (toFloat x) (toFloat y) 0
+                |> Mat4.rotate (s * pi / 2) (vec3 0 0 1)
+                |> Obstacle.entity
     in
-    List.filterMap stuff anglesAndBlockers
+    (case Map.tileAsChar { column = x, row = y } of
+        '#' ->
+            [ 0, 1, 2, 3 ]
+
+        '^' ->
+            [ 0 ]
+
+        _ ->
+            []
+    )
+        |> List.map sectorToEntity

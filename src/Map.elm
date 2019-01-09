@@ -6,11 +6,7 @@ import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Set exposing (Set)
-import TileCollision.Normalized exposing (BlockerDirections)
-
-
-type alias Tile =
-    TileCollision.Normalized.CollisionTile
+import TileCollision exposing (TileCollider, collideWhenXIncreases)
 
 
 worldSize =
@@ -28,48 +24,59 @@ tilemapSrc =
 
 
 
+-- Tile Colliders
+
+
+collideWhenXDecreases : TileCollider ()
+collideWhenXDecreases =
+    TileCollision.invertX collideWhenXIncreases
+
+
+collideWhenYDecreases : TileCollider ()
+collideWhenYDecreases =
+    TileCollision.flipXY collideWhenXDecreases
+
+
+type Delta
+    = Increases
+    | Decreases
+
+
+type SquareBlocker
+    = X Delta
+    | Y Delta
+
+
+platformBlocker : TileCollider SquareBlocker
+platformBlocker =
+    TileCollision.map (\() -> Y Decreases) collideWhenYDecreases
+
+
+squareBlocker : TileCollider SquareBlocker
+squareBlocker =
+    TileCollision.combine
+        [ TileCollision.map (\() -> X Increases) collideWhenXIncreases
+        , TileCollision.map (\() -> X Decreases) collideWhenXDecreases
+        , TileCollision.map (\() -> Y Increases) (TileCollision.flipXY collideWhenXDecreases)
+        , TileCollision.map (\() -> Y Decreases) collideWhenYDecreases
+        ]
+
+
+
 --
 
 
-tileCenter : Tile -> Vec2
-tileCenter tile =
-    vec2 (toFloat tile.x + 0.5) (toFloat tile.y + 0.5)
-
-
-
---
-
-
-charToBlockers : Char -> BlockerDirections Bool
-charToBlockers char =
+charToCollider : Char -> TileCollider SquareBlocker
+charToCollider char =
     case char of
         '#' ->
-            { positiveDeltaX = True
-            , negativeDeltaX = True
-            , positiveDeltaY = True
-            , negativeDeltaY = True
-            }
-
-        '=' ->
-            { positiveDeltaX = False
-            , negativeDeltaX = False
-            , positiveDeltaY = True
-            , negativeDeltaY = True
-            }
+            squareBlocker
 
         '^' ->
-            { positiveDeltaX = False
-            , negativeDeltaX = False
-            , positiveDeltaY = False
-            , negativeDeltaY = True
-            }
+            platformBlocker
 
         _ ->
-            { positiveDeltaX = False
-            , negativeDeltaX = False
-            , positiveDeltaY = False
-            , negativeDeltaY = False
-            }
+            TileCollision.collideNever
 
 
 type alias Tilemap =
@@ -101,22 +108,16 @@ rowToTuple invertedY row =
         |> List.indexedMap charToTuple
 
 
-getBlockers : (BlockerDirections Bool -> Bool) -> Int -> Int -> Bool
-getBlockers getter x y =
-    case Dict.get ( x, y ) tilemap of
+tileAsChar : TileCollision.RowColumn -> Char
+tileAsChar { column, row } =
+    case Dict.get ( column, row ) tilemap of
         Nothing ->
-            False
+            ' '
 
         Just char ->
             char
-                |> charToBlockers
-                |> getter
 
 
-hasBlockerAlong : BlockerDirections (Int -> Int -> Bool)
-hasBlockerAlong =
-    { positiveDeltaX = getBlockers .positiveDeltaX
-    , negativeDeltaX = getBlockers .negativeDeltaX
-    , positiveDeltaY = getBlockers .positiveDeltaY
-    , negativeDeltaY = getBlockers .negativeDeltaY
-    }
+tileAsCollider : TileCollision.RowColumn -> TileCollider SquareBlocker
+tileAsCollider =
+    tileAsChar >> charToCollider

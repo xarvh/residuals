@@ -1,106 +1,70 @@
-module TileCollision
-    exposing
-        ( Args
-        , BlockerDirections
-        , Collision
-        , CollisionTile
-        , Direction(..)
-        , Vector
-        , collide
-        )
+module TileCollision exposing (..)
 
 import List.Extra
 
 
-type alias Pixels =
-    Int
+-- Types
 
 
-type alias Tiles =
-    Int
-
-
-type alias Vector =
-    { x : Pixels
-    , y : Pixels
+type alias Vec =
+    { x : Float
+    , y : Float
     }
 
 
-type alias Size =
-    { halfWidth : Int
-    , halfHeight : Int
+type alias RowColumn =
+    { row : Int
+    , column : Int
     }
 
 
-type alias BlockerDirections a =
-    {-
+type alias Collision geometry =
+    { geometry : geometry
+    , impactPoint : Vec
+    , aabbPositionAtImpact : Vec
+    , fix : Vec
+    , tile : RowColumn
 
-          _____
-         |     |
-       --|->   |   posX
-         |_____|
-
-          _____
-         |     |
-         |   <-|-- negX
-         |_____|
-
-          _____
-         |     |
-         |  A  |   posY
-         |__|__|
-            |
-
-          __|__
-         |  |  |
-         |  v  |   negY
-         |_____|
-
-    -}
-    { positiveDeltaX : a
-    , negativeDeltaX : a
-    , positiveDeltaY : a
-    , negativeDeltaY : a
+    -- distance between AABB's position at start and at impact
+    , distanceSquared : Float
     }
 
 
-type Direction
-    = PositiveDeltaX
-    | NegativeDeltaX
-    | PositiveDeltaY
-    | NegativeDeltaY
-
-
-type alias Args =
-    { hasBlockerAlong : BlockerDirections (Int -> Int -> Bool)
-    , tileSize : Int
-    , mobSize : Size
-    , start : Vector
-    , end : Vector
-    , bias : Float
+type alias RelativeAabbTrajectory =
+    { relativeStart : Vec
+    , relativeEnd : Vec
+    , halfWidth : Float
+    , halfHeight : Float
+    , minimumDistance : Float
     }
 
 
-type alias Collision =
-    { point : Vector
-    , fix : Vector
-    , tiles : List CollisionTile
+type alias AbsoluteAabbTrajectory =
+    { start : Vec
+    , end : Vec
+    , width : Float
+    , height : Float
+    , minimumDistance : Float
     }
 
 
-type alias CollisionTile =
-    { d : Direction
-    , x : Int
-    , y : Int
-    }
+{-| Collider
+
+Defines how a certain tile type reacts to an AABB bumping into it
+
+`start` and `end` of the AabbTrajectory are
+
+-}
+type alias TileCollider geometry =
+    RelativeAabbTrajectory -> Maybe (Collision geometry)
 
 
 
---
+-- Vec
 
 
-squaredDistance : Vector -> Vector -> Int
-squaredDistance a b =
+distanceSquared : Vec -> Vec -> Float
+distanceSquared a b =
     let
         dx =
             a.x - b.x
@@ -111,321 +75,302 @@ squaredDistance a b =
     dx * dx + dy * dy
 
 
-
---
--- Trace all tiles swept by an horizontal movement ---------------------------
---
-
-
-tileCenterInPixels : Pixels -> Tiles -> Pixels
-tileCenterInPixels tileSizeInPixels tiles =
-    tiles * tileSizeInPixels + tileSizeInPixels // 2
+vecInvertX : Vec -> Vec
+vecInvertX v =
+    { v | x = -v.x }
 
 
-{-| Takes a tile only if it can block movement
-(If the mob is already in a tile, that tile can't block it)
+vecInvertY : Vec -> Vec
+vecInvertY v =
+    { v | y = -v.y }
 
-      [tile0] [tile1] [tile2]
-                 ^       ^
-                 s ----- e    (Take only tile2, ignore tile1)
 
-      [tile0] [tile1] [tile2]
-                 ^       ^
-                 e ----- s    (Take only tile1, ignore tile2)
+vecFlipXY : Vec -> Vec
+vecFlipXY v =
+    { x = v.y
+    , y = v.x
+    }
+
+
+
+-- Collision
+
+
+collisionMap : (a -> b) -> (Vec -> Vec) -> Collision a -> Collision b
+collisionMap transformGeometry transformVec c =
+    { geometry = transformGeometry c.geometry
+    , impactPoint = transformVec c.impactPoint
+    , aabbPositionAtImpact = transformVec c.aabbPositionAtImpact
+    , fix = transformVec c.fix
+    , tile = c.tile
+    , distanceSquared = c.distanceSquared
+    }
+
+
+
+-- Tiles & Vecs
+
+
+coordinateToTile : Float -> Int
+coordinateToTile =
+    round
+
+
+vecToRowColumn : Vec -> RowColumn
+vecToRowColumn v =
+    { row = coordinateToTile v.y
+    , column = coordinateToTile v.x
+    }
+
+
+tileAdd : RowColumn -> Vec -> Vec
+tileAdd tile vec =
+    { x = vec.x + toFloat tile.column
+    , y = vec.y + toFloat tile.row
+    }
+
+
+tileSub : RowColumn -> Vec -> Vec
+tileSub tile vec =
+    { x = vec.x - toFloat tile.column
+    , y = vec.y - toFloat tile.row
+    }
+
+
+
+-- Collisions
+
+
+relativeToAbsoluteCollision : Collision geometry -> Collision geometry
+relativeToAbsoluteCollision relative =
+    { relative
+        | impactPoint = tileAdd relative.tile relative.impactPoint
+        , aabbPositionAtImpact = tileAdd relative.tile relative.aabbPositionAtImpact
+        , fix = tileAdd relative.tile relative.fix
+    }
+
+
+
+-- Trajectories
+
+
+absoluteToRelativeTrajectory : RowColumn -> AbsoluteAabbTrajectory -> RelativeAabbTrajectory
+absoluteToRelativeTrajectory tile trajectory =
+    { relativeStart = tileSub tile trajectory.start
+    , relativeEnd = tileSub tile trajectory.end
+    , halfWidth = trajectory.width / 2
+    , halfHeight = trajectory.height / 2
+    , minimumDistance = trajectory.minimumDistance
+    }
+
+
+{-| Sweep
+
+Find all tiles swept by a horizontal segment whose center moves from start to end.
+
+If the AABB is moving right, consider only the tiles swept by the right side of the AABB
+...
 
 -}
-tilesRangeAccountingForMovement : Int -> Int -> Int -> List Int
-tilesRangeAccountingForMovement tileSize start end =
-    -- all arguments are in pixels
+sweep : AbsoluteAabbTrajectory -> List RowColumn
+sweep { start, end, width, height } =
+    List.Extra.lift2
+        (\x y -> { column = x, row = y })
+        (tileRange start.x end.x (width / 2))
+        (tileRange start.y end.y (height / 2))
+
+
+tileRange : Float -> Float -> Float -> List Int
+tileRange start end half =
     if start < end then
         List.range
-            (toFloat start / toFloat tileSize |> ceiling)
-            (toFloat (end - 1) / toFloat tileSize |> floor)
+            (coordinateToTile <| start - half)
+            (coordinateToTile <| end + half)
     else
         List.range
-            (toFloat end / toFloat tileSize |> floor)
-            (toFloat (start - tileSize) / toFloat tileSize |> floor)
+            (coordinateToTile <| end - half)
+            (coordinateToTile <| start + half)
 
 
-{-| Take a tile if the point is inside it
 
-      [tile0] [tile1] [tile2]
-                 ^       ^
-                 s ----- e    (Take both tile1 and tile 2)
+-- Collide
 
-      [tile0] [tile1] [tile2]
-             ^       ^
-             s ----- e    (Take only tile1)
 
--}
-tilesRangeInclusive : Int -> Int -> Int -> List Int
-tilesRangeInclusive tileSize start end =
+recursiveCollide : (RowColumn -> TileCollider geometry) -> AbsoluteAabbTrajectory -> List (Collision geometry) -> List (Collision geometry)
+recursiveCollide getCollider trajectory pairs =
     let
-        mi =
-            min start end
+        testCollision : RowColumn -> Maybe (Collision geometry)
+        testCollision tile =
+            trajectory
+                |> absoluteToRelativeTrajectory tile
+                |> getCollider tile
+                |> Maybe.map (\collision -> { collision | tile = tile })
 
-        ma =
-            max start end
+        maybeCollision : Maybe (Collision geometry)
+        maybeCollision =
+            sweep trajectory
+                |> List.filterMap testCollision
+                |> List.Extra.minimumBy .distanceSquared
+                |> Maybe.map relativeToAbsoluteCollision
     in
-    List.range
-        (toFloat mi / toFloat tileSize |> floor)
-        (toFloat (ma - 1) / toFloat tileSize |> floor)
+    case maybeCollision of
+        Nothing ->
+            pairs
+
+        Just collision ->
+            if List.length pairs > 10 then
+                collision :: pairs
+            else
+                recursiveCollide
+                    getCollider
+                    { trajectory
+                        | start = collision.aabbPositionAtImpact
+                        , end = collision.fix
+                    }
+                    (collision :: pairs)
 
 
-sweepAlongX : Args -> List Collision
-sweepAlongX { tileSize, mobSize, start, end, bias } =
-    if end.x == start.x then
-        []
+collide : (RowColumn -> TileCollider geometry) -> AbsoluteAabbTrajectory -> List (Collision geometry)
+collide getCollider trajectory =
+    recursiveCollide getCollider trajectory []
+
+
+
+-- Colliders
+
+
+combine : List (TileCollider a) -> TileCollider a
+combine colliders =
+    let
+        combined : TileCollider a
+        combined input =
+            colliders
+                |> List.filterMap (\collider -> collider input)
+                |> List.Extra.minimumBy .distanceSquared
+    in
+    combined
+
+
+map : (a -> b) -> TileCollider a -> TileCollider b
+map f collider =
+    collider >> Maybe.map (collisionMap f identity)
+
+
+{-| `forwards` and `backwards` can be any two functions that satisfy `forwards >> backwards == identity`
+-}
+transform : (Vec -> Vec) -> (Vec -> Vec) -> (a -> b) -> TileCollider a -> TileCollider b
+transform forwards backwards geo collider =
+    let
+        transformed : TileCollider b
+        transformed input =
+            { input
+                | relativeStart = forwards input.relativeStart
+                , relativeEnd = forwards input.relativeEnd
+            }
+                |> collider
+                |> Maybe.map (collisionMap geo backwards)
+    in
+    transformed
+
+
+invertX : TileCollider a -> TileCollider a
+invertX =
+    transform vecInvertX vecInvertX identity
+
+
+invertY : TileCollider a -> TileCollider a
+invertY =
+    transform vecInvertY vecInvertY identity
+
+
+flipXY : TileCollider a -> TileCollider a
+flipXY collider =
+    let
+        transformed : TileCollider a
+        transformed input =
+            { input
+                | relativeStart = vecFlipXY input.relativeStart
+                , relativeEnd = vecFlipXY input.relativeEnd
+                , halfWidth = input.halfHeight
+                , halfHeight = input.halfWidth
+            }
+                |> collider
+                |> Maybe.map (collisionMap identity vecFlipXY)
+    in
+    transformed
+
+
+
+-- Empty block
+
+
+collideNever : TileCollider a
+collideNever aabbTrajectory =
+    Nothing
+
+
+
+-- Left to right blocker
+
+
+makeTrajectory : Vec -> Vec -> Float -> Float
+makeTrajectory s e x =
+    (x - s.x) * (e.y - s.y) / (e.x - s.x) + s.y
+
+
+collideWhenXIncreases : TileCollider ()
+collideWhenXIncreases { relativeStart, relativeEnd, halfWidth, halfHeight, minimumDistance } =
+    let
+        -- The actual X coordinate of the blocker respect to the tile center is -0.5
+        blockX =
+            -0.5
+    in
+    if relativeStart.x >= relativeEnd.x then
+        -- If movement is not left to right, no point in continuing
+        Nothing
+    else if relativeStart.x + halfWidth > blockX then
+        -- The AABB is already past the block, so it should pass
+        Nothing
+    else if relativeEnd.x + halfWidth <= blockX then
+        -- The AABB stops before actually encountering the block
+        Nothing
     else
         let
-            { halfWidth, halfHeight } =
-                mobSize
+            trajectory =
+                makeTrajectory relativeStart relativeEnd
 
-            ( sign, direction ) =
-                if end.x > start.x then
-                    ( 1, PositiveDeltaX )
-                else
-                    ( -1, NegativeDeltaX )
+            -- The AAB side that can collide is the right side
+            collisionY =
+                trajectory (blockX - halfWidth)
+        in
+        if collisionY + halfHeight < -0.5 then
+            -- Top of the AABB is below the tile at the collision point
+            Nothing
+        else if collisionY - halfHeight > 0.5 then
+            -- Bottom of the AABB is above the tile at the collision point
+            Nothing
+        else
+            let
+                fixedX =
+                    blockX - halfWidth - minimumDistance
 
-            s =
-                { start | x = start.x + halfWidth * sign }
+                point =
+                    { x = blockX
+                    , y = collisionY
+                    }
 
-            e =
-                { end | x = end.x + halfWidth * sign }
-
-            ( xs, ys ) =
-                ( toFloat s.x, toFloat s.y )
-
-            ( xe, ye ) =
-                ( toFloat e.x, toFloat e.y )
-
-            {-
-
-               Equation of the line connecting Start with End
-
-               (x - Sx)(Ey - Sy) = (y - Sy)(Ex - Sx)
-
-                        S
-                         \
-                          \
-                           E
-
-            -}
-            floatTrajectoryY x =
-                (x - xs) * (ye - ys) / (xe - xs) + ys
-
-            trajectoryY =
-                toFloat >> floatTrajectoryY >> round
-
-            collidesWithX tileX =
-                let
-                    tileCenterX =
-                        tileCenterInPixels tileSize tileX
-
-                    blockingSurfaceOffset =
-                        -sign * tileSize // 2
-
-                    collisionX =
-                        tileCenterX + blockingSurfaceOffset
-
-                    collisionY =
-                        trajectoryY collisionX
-                in
-                { point = Vector collisionX collisionY
-                , fix = Vector (collisionX - (halfWidth + bias) * sign) collisionY
-                , tiles =
-                    tilesRangeInclusive tileSize (collisionY - halfHeight) (collisionY + halfHeight)
-                        |> List.map (CollisionTile direction tileX)
+                aabbPositionAtImpact =
+                    { x = fixedX
+                    , y = collisionY
+                    }
+            in
+            Just
+                { geometry = ()
+                , impactPoint = point
+                , aabbPositionAtImpact = aabbPositionAtImpact
+                , fix = { relativeEnd | x = max relativeStart.x fixedX }
+                , distanceSquared = distanceSquared relativeStart aabbPositionAtImpact
+                , tile = { row = 0, column = 0 }
                 }
 
-            range =
-                tilesRangeAccountingForMovement tileSize s.x e.x
-        in
-        List.map collidesWithX range
 
-
-
---
--- Collisions against tile blockers
---
-
-
-findClosestTo : Pixels -> Vector -> List Collision -> Maybe Collision
-findClosestTo tileSize start l =
-    let
-        distance : Collision -> Int
-        distance collision =
-            squaredDistance start collision.point
-    in
-    List.Extra.minimumBy distance l
-
-
-intersectSweepWithBlockers : (Int -> Int -> Bool) -> Collision -> Maybe Collision
-intersectSweepWithBlockers hasBlocker collision =
-    case List.filter (\t -> hasBlocker t.x t.y) collision.tiles of
-        [] ->
-            Nothing
-
-        tiles ->
-            Just { collision | tiles = tiles }
-
-
-collisionAlongX : Args -> Maybe Collision
-collisionAlongX args =
-    let
-        hasBlockerX =
-            if args.end.x - args.start.x > 0 then
-                args.hasBlockerAlong.positiveDeltaX
-            else
-                args.hasBlockerAlong.negativeDeltaX
-    in
-    args
-        -- TODO: ensure that the sweep is ordered from nearest to start to furthest
-        -- then skip building filtered lists?
-        |> sweepAlongX
-        |> List.filterMap (intersectSweepWithBlockers hasBlockerX)
-        |> findClosestTo args.tileSize args.start
-
-
-
---
--- Collision resolution ------------------------------------------------------
---
-
-
-resolveSecondaryCollisionAlongY : Collision -> Args -> Collision
-resolveSecondaryCollisionAlongY collAlongX args =
-    let
-        start =
-            collAlongX.fix
-
-        end =
-            { x = start.x
-            , y = args.end.y
-            }
-    in
-    case collisionAlongY { args | start = start, end = end } of
-        Nothing ->
-            { collAlongX | fix = end }
-
-        Just collAlongY ->
-            { point = collAlongX.point
-            , fix = collAlongY.fix
-            , tiles = collAlongX.tiles ++ collAlongY.tiles
-            }
-
-
-
---
--- Flipped axes versions of the functions above
---
-
-
-flipWH : Size -> Size
-flipWH { halfWidth, halfHeight } =
-    { halfWidth = halfHeight
-    , halfHeight = halfWidth
-    }
-
-
-flipVector : Vector -> Vector
-flipVector { x, y } =
-    { x = y
-    , y = x
-    }
-
-
-flipCollisionTile : CollisionTile -> CollisionTile
-flipCollisionTile { d, x, y } =
-    { x = y
-    , y = x
-    , d =
-        case d of
-            PositiveDeltaX ->
-                PositiveDeltaY
-
-            NegativeDeltaX ->
-                NegativeDeltaY
-
-            PositiveDeltaY ->
-                PositiveDeltaX
-
-            NegativeDeltaY ->
-                NegativeDeltaX
-    }
-
-
-flipBlockers : BlockerDirections (Int -> Int -> Bool) -> BlockerDirections (Int -> Int -> Bool)
-flipBlockers b =
-    { positiveDeltaX = \x y -> b.positiveDeltaY y x
-    , negativeDeltaX = \x y -> b.negativeDeltaY y x
-    , positiveDeltaY = \x y -> b.positiveDeltaX y x
-    , negativeDeltaY = \x y -> b.negativeDeltaX y x
-    }
-
-
-flipArgs : Args -> Args
-flipArgs args =
-    { args
-        | mobSize = flipWH args.mobSize
-        , start = flipVector args.start
-        , end = flipVector args.end
-        , hasBlockerAlong = flipBlockers args.hasBlockerAlong
-    }
-
-
-flipCollision : Collision -> Collision
-flipCollision collision =
-    { point = flipVector collision.point
-    , fix = flipVector collision.fix
-    , tiles = List.map flipCollisionTile collision.tiles
-    }
-
-
-sweepAlongY : Args -> List Collision
-sweepAlongY args =
-    args
-        |> flipArgs
-        |> sweepAlongX
-        |> List.map flipCollision
-
-
-collisionAlongY : Args -> Maybe Collision
-collisionAlongY args =
-    args
-        |> flipArgs
-        |> collisionAlongX
-        |> Maybe.map flipCollision
-
-
-resolveSecondaryCollisionAlongX : Collision -> Args -> Collision
-resolveSecondaryCollisionAlongX collision args =
-    args
-        |> flipArgs
-        |> resolveSecondaryCollisionAlongY (flipCollision collision)
-        |> flipCollision
-
-
-
---
--- Put X and Y together
---
-
-
-collide : Args -> Maybe Collision
-collide args =
-    case ( collisionAlongX args, collisionAlongY args ) of
-        ( Nothing, Nothing ) ->
-            Nothing
-
-        ( Just collisionX, Nothing ) ->
-            Just <| resolveSecondaryCollisionAlongY collisionX args
-
-        ( Nothing, Just collisionY ) ->
-            Just <| resolveSecondaryCollisionAlongX collisionY args
-
-        ( Just collisionX, Just collisionY ) ->
-            if squaredDistance args.start collisionX.fix < squaredDistance args.start collisionY.fix then
-                Just <| resolveSecondaryCollisionAlongY collisionX args
-            else
-                Just <| resolveSecondaryCollisionAlongX collisionY args

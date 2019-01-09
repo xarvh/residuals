@@ -13,7 +13,7 @@ import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Scene
-import TileCollision exposing (Vector)
+import TileCollision
 import Time exposing (Posix)
 import Viewport exposing (PixelPosition, PixelSize)
 import WebGL

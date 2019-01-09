@@ -1,9 +1,14 @@
 module Game exposing (..)
 
-import Map
+import Dict exposing (Dict)
+import Map exposing (Delta(..), SquareBlocker(..))
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import TileCollision exposing (Direction(..))
-import TileCollision.Normalized exposing (CollisionTile, Size)
+import TileCollision
+    exposing
+        ( AbsoluteAabbTrajectory
+        , Collision
+        , RowColumn
+        )
 
 
 --
@@ -26,22 +31,17 @@ clampToRadius radius v =
 
 
 baseAcceleration =
-    0.4
+    4
 
 
 maxSpeed =
     10
 
 
-playerSize : Size
 playerSize =
     { width = 0.5
     , height = 1
     }
-
-
-tileSize =
-    16
 
 
 
@@ -76,8 +76,13 @@ playerThink dt input player =
         gravityAcceleration =
             vec2 0 (-baseAcceleration / 2)
 
+        friction =
+            Vec2.scale -3 player.speed
+
         totalAcceleration =
-            Vec2.add movementAcceleration gravityAcceleration
+            movementAcceleration
+                |> Vec2.add gravityAcceleration
+                |> Vec2.add friction
 
         speed =
             totalAcceleration
@@ -90,44 +95,48 @@ playerThink dt input player =
                 |> Vec2.scale dt
                 |> Vec2.add player.position
 
-        maybeCollision =
-            TileCollision.Normalized.collide
-                { hasBlockerAlong = Map.hasBlockerAlong
-                , tileSize = tileSize
-                , mobSize = playerSize
-                , start = player.position
-                , end = idealPosition
+        collisions =
+            TileCollision.collide
+                Map.tileAsCollider
+                { width = playerSize.width
+                , height = playerSize.height
+                , start = Vec2.toRecord player.position
+                , end = Vec2.toRecord idealPosition
+                , minimumDistance = 0.1
                 }
 
-        ( fixedPosition, fixedSpeed ) =
-            case maybeCollision of
-                Nothing ->
-                    ( idealPosition, speed )
+        fixedPosition =
+            case collisions of
+                [] ->
+                    idealPosition
 
-                Just collision ->
-                    ( collision.fix, fixSpeed collision.tiles speed )
+                collision :: cs ->
+                    Vec2.fromRecord collision.fix
     in
-    { player | position = fixedPosition, speed = fixedSpeed }
+    { player
+        | position = fixedPosition
+        , speed = fixSpeed collisions speed
+    }
 
 
-fixSpeed : List CollisionTile -> Vec2 -> Vec2
-fixSpeed tiles speed =
+fixSpeed : List (Collision SquareBlocker) -> Vec2 -> Vec2
+fixSpeed collisions speed =
     let
-        sp tile ( x, y ) =
-            case Debug.log "speedfix" tile.d of
-                PositiveDeltaX ->
+        sp collision ( x, y ) =
+            case collision.geometry of
+                X Increases ->
                     ( min 0 x, y )
 
-                NegativeDeltaX ->
+                X Decreases ->
                     ( max 0 x, y )
 
-                PositiveDeltaY ->
+                Y Increases ->
                     ( x, min 0 y )
 
-                NegativeDeltaY ->
+                Y Decreases ->
                     ( x, max 0 y )
 
         ( xx, yy ) =
-            List.foldl sp ( Vec2.getX speed, Vec2.getY speed ) tiles
+            List.foldl sp ( Vec2.getX speed, Vec2.getY speed ) collisions
     in
     vec2 xx yy
