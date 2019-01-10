@@ -31,7 +31,7 @@ clampToRadius radius v =
 
 
 baseAcceleration =
-    4
+    8
 
 
 maxSpeed =

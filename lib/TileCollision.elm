@@ -224,8 +224,8 @@ recursiveCollide getCollider trajectory pairs =
                 recursiveCollide
                     getCollider
                     { trajectory
-                        | start = collision.aabbPositionAtImpact
-                        , end = collision.fix
+                        --| start = collision.aabbPositionAtImpact
+                        | end = collision.fix
                     }
                     (collision :: pairs)
 
@@ -328,7 +328,7 @@ collideWhenXIncreases { relativeStart, relativeEnd, halfWidth, halfHeight, minim
     if relativeStart.x >= relativeEnd.x then
         -- If movement is not left to right, no point in continuing
         Nothing
-    else if relativeStart.x + halfWidth > blockX then
+    else if relativeStart.x + halfWidth >= blockX then
         -- The AABB is already past the block, so it should pass
         Nothing
     else if relativeEnd.x + halfWidth <= blockX then
@@ -343,10 +343,10 @@ collideWhenXIncreases { relativeStart, relativeEnd, halfWidth, halfHeight, minim
             collisionY =
                 trajectory (blockX - halfWidth)
         in
-        if collisionY + halfHeight < -0.5 then
+        if collisionY + halfHeight <= -0.5 then
             -- Top of the AABB is below the tile at the collision point
             Nothing
-        else if collisionY - halfHeight > 0.5 then
+        else if collisionY - halfHeight >= 0.5 then
             -- Bottom of the AABB is above the tile at the collision point
             Nothing
         else
