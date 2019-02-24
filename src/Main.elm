@@ -104,7 +104,7 @@ update msg model =
             noCmd
                 { model
                     | currentTimeInSeconds = model.currentTimeInSeconds + dt
-                    , pause = pause
+                    --, pause = pause
                     , player = player
                     , collisions = collisions
                 }

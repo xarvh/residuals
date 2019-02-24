@@ -62,16 +62,17 @@ type alias Player =
 
 playerInit : Player
 playerInit =
-    { position = vec2 -2.211749543059631 0.012178343439440242
+    --{ position = vec2 -2.211749543059631 0.012178343439440242
+    { position = vec2 -2 1
     , speed = vec2 -2.586545688407802 -1.3333333039685646
     }
 
 
 playerThink : Float -> { x : Int, y : Int } -> Player -> ( Player, List (Collision SquareBlocker) )
-playerThink dt input_ player =
+playerThink dt input player =
     let
-        input =
-            { x = -1, y = 0 }
+--         input =
+--             { x = -1, y = 0 }
 
         movementAcceleration =
             vec2 (toFloat input.x * baseAcceleration) (toFloat input.y * baseAcceleration)
@@ -105,7 +106,7 @@ playerThink dt input_ player =
                 , height = playerSize.height
                 , start = Vec2.toRecord player.position
                 , end = Vec2.toRecord idealPosition
-                , minimumDistance = 0.1
+                , minimumDistance = 0.0001
                 }
 
         fixedPosition =
