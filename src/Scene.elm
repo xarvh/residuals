@@ -11,6 +11,7 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Obstacle
 import Quad
 import Set exposing (Set)
+import TileCollision
 import WebGL exposing (Entity, Mesh, Shader)
 
 
@@ -40,13 +41,14 @@ periodHarmonic time phase period =
 
 type alias EntitiesArgs =
     { cameraToViewport : Mat4
+    , collisions : List (TileCollision.Collision Map.SquareBlocker)
     , time : Float
     , player : Game.Player
     }
 
 
 entities : EntitiesArgs -> List Entity
-entities { cameraToViewport, time, player } =
+entities { cameraToViewport, time, player, collisions } =
     let
         worldToViewport =
             cameraToViewport
@@ -61,10 +63,15 @@ entities { cameraToViewport, time, player } =
         playerEntity =
             [ mob worldToViewport player.position (vec3 1 0 0)
             ]
+
+        collisionEntities =
+            List.indexedMap (viewCollision worldToViewport) collisions
+              |> List.concat
     in
     List.concat
         [ blockers
         , playerEntity
+        , collisionEntities
         ]
 
 
@@ -96,20 +103,36 @@ dot worldToViewport position size color =
     Circle.entity entityToViewport color
 
 
-{-
-tileColor : Mat4 -> Tile -> Vec3 -> Entity
-tileColor worldToViewport tile color =
-    let
-        { x, y } =
-            tile
-                |> Map.tileCenter
-                |> Vec2.toRecord
+viewCollision : Mat4 -> Int -> TileCollision.Collision Map.SquareBlocker -> List Entity
+viewCollision worldToViewport index collision =
+  let
+      color =case index of
+        0 -> vec3 1 0 0
+        1 -> vec3 0 1 0
+        _ -> vec3 0 0 1
 
-        entityToViewport =
-            worldToViewport
-                |> Mat4.translate3 x y 0
-    in
-    Quad.entity entityToViewport color
+  in
+    [ dot worldToViewport (vec2 (toFloat collision.tile.column) (toFloat collision.tile.row)) 1.3 color
+    , dot worldToViewport (Vec2.fromRecord collision.aabbPositionAtImpact) 1 color
+--     , dot worldToViewport (Vec2.fromRecord collision.fix) 0.3 color
+    ]
+
+
+
+{-
+   tileColor : Mat4 -> Tile -> Vec3 -> Entity
+   tileColor worldToViewport tile color =
+       let
+           { x, y } =
+               tile
+                   |> Map.tileCenter
+                   |> Vec2.toRecord
+
+           entityToViewport =
+               worldToViewport
+                   |> Mat4.translate3 x y 0
+       in
+       Quad.entity entityToViewport color
 -}
 
 

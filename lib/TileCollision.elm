@@ -52,8 +52,6 @@ type alias AbsoluteAabbTrajectory =
 
 Defines how a certain tile type reacts to an AABB bumping into it
 
-`start` and `end` of the AabbTrajectory are
-
 -}
 type alias TileCollider geometry =
     RelativeAabbTrajectory -> Maybe (Collision geometry)
@@ -339,7 +337,7 @@ collideWhenXIncreases { relativeStart, relativeEnd, halfWidth, halfHeight, minim
             trajectory =
                 makeTrajectory relativeStart relativeEnd
 
-            -- The AAB side that can collide is the right side
+            -- The AABB side that can collide is the right side
             collisionY =
                 trajectory (blockX - halfWidth)
         in

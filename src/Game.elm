@@ -62,14 +62,17 @@ type alias Player =
 
 playerInit : Player
 playerInit =
-    { position = vec2 0 5
-    , speed = vec2 0 0
+    { position = vec2 -2.211749543059631 0.012178343439440242
+    , speed = vec2 -2.586545688407802 -1.3333333039685646
     }
 
 
-playerThink : Float -> { x : Int, y : Int } -> Player -> Player
-playerThink dt input player =
+playerThink : Float -> { x : Int, y : Int } -> Player -> ( Player, List (Collision SquareBlocker) )
+playerThink dt input_ player =
     let
+        input =
+            { x = -1, y = 0 }
+
         movementAcceleration =
             vec2 (toFloat input.x * baseAcceleration) (toFloat input.y * baseAcceleration)
 
@@ -113,14 +116,16 @@ playerThink dt input player =
                 collision :: cs ->
                     Vec2.fromRecord collision.fix
     in
-    { player
+    ( { player
         | position = fixedPosition
-        , speed = fixSpeed collisions speed
-    }
+        , speed = fixSpeed ( input, player ) collisions speed
+      }
+    , collisions
+    )
 
 
-fixSpeed : List (Collision SquareBlocker) -> Vec2 -> Vec2
-fixSpeed collisions speed =
+fixSpeed : a -> List (Collision SquareBlocker) -> Vec2 -> Vec2
+fixSpeed a collisions speed =
     let
         sp collision ( x, y ) =
             case collision.geometry of
@@ -128,6 +133,10 @@ fixSpeed collisions speed =
                     ( min 0 x, y )
 
                 X Decreases ->
+                    let
+                        q =
+                            List.map (Debug.log "") collisions -- ( a, collisions, speed )
+                    in
                     ( max 0 x, y )
 
                 Y Increases ->

@@ -32,6 +32,7 @@ type alias Model =
     , player : Game.Player
     , keys : List Keyboard.Key
     , pause : Bool
+    , collisions : List (TileCollision.Collision Map.SquareBlocker)
     }
 
 
@@ -57,6 +58,7 @@ init flags =
             , player = Game.playerInit
             , keys = []
             , pause = False
+            , collisions = []
             }
 
         cmd =
@@ -94,13 +96,17 @@ update msg model =
                 dt =
                     dtInMilliseconds / 1000
 
-                player =
+                (player, collisions) =
                     Game.playerThink dt (Keyboard.Arrows.arrows model.keys) model.player
+
+                pause = Vec2.getX player.speed == 0
             in
             noCmd
                 { model
                     | currentTimeInSeconds = model.currentTimeInSeconds + dt
+                    , pause = pause
                     , player = player
+                    , collisions = collisions
                 }
 
 
@@ -138,8 +144,9 @@ view model =
     let
         entities =
             Scene.entities
-                { cameraToViewport = Viewport.worldToPixelTransform model.viewportSize 10 --Map.worldSize
+                { cameraToViewport = Viewport.worldToPixelTransform model.viewportSize 6 --Map.worldSize
                 , player = model.player
+                , collisions = model.collisions
                 , time = model.currentTimeInSeconds
                 }
     in

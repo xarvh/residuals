@@ -55,10 +55,10 @@ platformBlocker =
 squareBlocker : TileCollider SquareBlocker
 squareBlocker =
     TileCollision.combine
-        [ TileCollision.map (\() -> X Increases) collideWhenXIncreases
-        , TileCollision.map (\() -> X Decreases) collideWhenXDecreases
-        , TileCollision.map (\() -> Y Increases) (TileCollision.flipXY collideWhenXDecreases)
+        [ TileCollision.map (\() -> Y Increases) (TileCollision.flipXY collideWhenXIncreases)
         , TileCollision.map (\() -> Y Decreases) collideWhenYDecreases
+        , TileCollision.map (\() -> X Increases) collideWhenXIncreases
+        , TileCollision.map (\() -> X Decreases) collideWhenXDecreases
         ]
 
 
