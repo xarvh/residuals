@@ -1,29 +1,51 @@
 extends Node2D
 
 
-var time = 0
+# stuff that can be set from the outside
 var directionIsLeft = true
-var isWalking = true
+var walkingSpeed = 1
 
+# config stuff
+var armSwingAmplitude = 0.05 * PI
+var armAngleOffset = -0.01 * PI
 
+# internal stuff
+var time = 0
+
+var spriteLegs
+var spriteHead
+var spriteArm
 
 func _ready():
-    pass
+    self.spriteLegs = self.get_node('Legs')
+    self.spriteHead = self.spriteLegs.get_node('Head')
+    self.spriteArm = self.spriteHead.get_node('Arm')
 
 
 func _process(delta):
     time += delta
 
-    var duration = 1
-    var normalizedFrameTime = fposmod(time, duration) / duration
+    var legsFrame
+    var armAngle
+    if walkingSpeed == 0:
+        legsFrame = 1
 
-    var frame
-    if isWalking:
-      var totalFrames = 6
-      frame = floor(normalizedFrameTime * (totalFrames - 1))
+        armAngle = armAngleOffset
+
     else:
-      frame = 1
+        # TODO update directionIsLeft
+        # TODO scale x according to directionIsLeft
+        var totalFrames = 6
 
-    # TODO scale x according to directionIsLeft
-    # TODO add arm and head
-    self.get_node('Legs').frame = frame
+        # TODO ensure that duration is consistent with the pixel-per-second velocity
+        var duration = 1
+        var normalizedTime = fposmod(time, duration) / duration
+
+        legsFrame = floor(normalizedTime * (totalFrames - 1))
+
+        armAngle = armAngleOffset + armSwingAmplitude * sin(2 * PI * normalizedTime + 0.25 * PI)
+
+
+    self.spriteArm.rotation = armAngle
+
+    self.spriteLegs.frame = legsFrame
