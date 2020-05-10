@@ -18,8 +18,8 @@ const walkingSpeed = 10
 var sprite
 
 func _ready():
-    self.sprite = self.get_node('HumanCharacter')
-    self.sprite.walkingSpeed = 0
+    self.sprite = self.get_node('HumanCharacterAP')
+    #self.sprite.walkingSpeed = 0
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -37,11 +37,13 @@ func move(dx, dy, delta):
     self.sprite.position.x += dx * delta * walkingSpeed
     self.sprite.position.y += dy * delta * walkingSpeed
 
-    self.sprite.walkingSpeed = walkingSpeed
+    self.sprite.get_node("AnimationPlayer").play("Walk")
+    #self.sprite.walkingSpeed = walkingSpeed
 
     if dx < 0: self.sprite.scale.x = -1
     if dx > 0: self.sprite.scale.x = 1
 
 
 func stand(delta):
-    self.sprite.walkingSpeed = 0
+    self.sprite.get_node("AnimationPlayer").play("Idle")
+    #self.sprite.walkingSpeed = 0
