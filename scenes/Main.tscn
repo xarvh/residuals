@@ -25,6 +25,6 @@ __meta__ = {
 "_editor_description_": ""
 }
 
-[node name="HumanCharacterAP" parent="." instance=ExtResource( 3 )]
+[node name="HumanCharacter" parent="." instance=ExtResource( 3 )]
 position = Vector2( 34.8328, 23.3723 )
 scale = Vector2( 1, 1 )

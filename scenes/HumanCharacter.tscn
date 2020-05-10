@@ -6,25 +6,7 @@
 [ext_resource path="res://assets/pickaxe.png" type="Texture" id=4]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=5]
 
-[sub_resource type="ShaderMaterial" id=3]
-shader = ExtResource( 5 )
-shader_param/colorR = Vector3( 0.3, 0.2, 0 )
-shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
-shader_param/colorB = Vector3( 0, 0, 0.5 )
-
-[sub_resource type="ShaderMaterial" id=4]
-shader = ExtResource( 5 )
-shader_param/colorR = Vector3( 0.3, 0.2, 0 )
-shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
-shader_param/colorB = Vector3( 0.6, 0.3, 0.3 )
-
-[sub_resource type="ShaderMaterial" id=5]
-shader = ExtResource( 5 )
-shader_param/colorR = Vector3( 0.6, 0.3, 0 )
-shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
-shader_param/colorB = Vector3( 0, 0, 1 )
-
-[sub_resource type="Animation" id=6]
+[sub_resource type="Animation" id=1]
 resource_name = "Idle"
 tracks/0/type = "value"
 tracks/0/path = NodePath("Legs:frame")
@@ -103,8 +85,7 @@ tracks/3/keys = {
 "values": [ 1, 0, 3 ]
 }
 
-[sub_resource type="Animation" id=1]
-resource_name = "Walk"
+[sub_resource type="Animation" id=3]
 length = 6.0
 loop = true
 tracks/0/type = "value"
@@ -132,38 +113,57 @@ tracks/1/keys = {
 "values": [ 21.1757, -52.7455 ]
 }
 
+[sub_resource type="ShaderMaterial" id=4]
+shader = ExtResource( 5 )
+shader_param/colorR = Vector3( 0.3, 0.2, 0 )
+shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
+shader_param/colorB = Vector3( 0, 0, 0.5 )
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = ExtResource( 5 )
+shader_param/colorR = Vector3( 0.3, 0.2, 0 )
+shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
+shader_param/colorB = Vector3( 0.6, 0.3, 0.3 )
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = ExtResource( 5 )
+shader_param/colorR = Vector3( 0.6, 0.3, 0 )
+shader_param/colorG = Vector3( 0.5, 0.5, 0.5 )
+shader_param/colorB = Vector3( 0, 0, 1 )
+
 [node name="Node2D" type="Node2D"]
 position = Vector2( 183, 129 )
 scale = Vector2( 10, 10 )
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+playback_speed = 6.0
+anims/Idle = SubResource( 1 )
+anims/SwingTool = SubResource( 2 )
+anims/Walk = SubResource( 3 )
+
 [node name="Legs" type="Sprite" parent="."]
-material = SubResource( 3 )
+material = SubResource( 4 )
 texture = ExtResource( 1 )
 hframes = 6
-frame = 1
+frame = 3
 
 [node name="Torso+Head" type="Sprite" parent="Legs"]
-material = SubResource( 4 )
+material = SubResource( 5 )
 position = Vector2( -0.0658932, 2.66441 )
 texture = ExtResource( 2 )
 offset = Vector2( 0.0658932, -1.66441 )
 
 [node name="Arm" type="Sprite" parent="Legs/Torso+Head"]
-material = SubResource( 3 )
+material = SubResource( 4 )
 position = Vector2( 0.0518665, -2.2413 )
+rotation = -0.346533
 z_index = 1
 texture = ExtResource( 3 )
 offset = Vector2( -0.495468, 0.845141 )
 
 [node name="Pickaxe" type="Sprite" parent="Legs/Torso+Head/Arm"]
-material = SubResource( 5 )
+material = SubResource( 6 )
 position = Vector2( 3.306, 3.34567 )
 rotation = 1.74096
 z_index = -1
 texture = ExtResource( 4 )
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-playback_speed = 6.0
-anims/Idle = SubResource( 6 )
-anims/SwingTool = SubResource( 2 )
-anims/Walk = SubResource( 1 )
