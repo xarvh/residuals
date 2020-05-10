@@ -8,7 +8,7 @@ var walkingSpeed = 1
 
 
 func startSwinging():
-    swingToolEndTime = time + armToolSwingDuration
+    _swingToolEndTime = _time + armToolSwingDuration
 
 
 #
@@ -31,31 +31,31 @@ var armToolSwingEndAngle = deg2rad(-16.4)
 #
 # internal stuff
 #
-var time = 0
-var swingToolEndTime = 0
+var _time = 0
+var _swingToolEndTime = 0
 
-var spriteLegs
-var spriteHead
-var spriteArm
+var _spriteLegs
+var _spriteHead
+var _spriteArm
 
 func _ready():
-    self.spriteLegs = self.get_node('Legs')
-    self.spriteHead = self.spriteLegs.get_node('Head')
-    self.spriteArm = self.spriteHead.get_node('Arm')
+    self._spriteLegs = self.get_node('Legs')
+    self._spriteHead = self._spriteLegs.get_node('Head')
+    self._spriteArm = self._spriteHead.get_node('Arm')
 
     self.startSwinging()
 
 
 func _process(delta):
-    time += delta
+    _time += delta
 
     var legsFrame
     var armAngle
-    if swingToolEndTime > time:
+    if _swingToolEndTime > _time:
         # Animation: tool swing
         legsFrame = 1
 
-        var dt = (swingToolEndTime - time) / armToolSwingDuration
+        var dt = (_swingToolEndTime - _time) / armToolSwingDuration
         var s = armToolSwingStartAngle
         var e = armToolSwingEndAngle
         armAngle = s + (e - s) * (1 - dt) * (1 - dt)
@@ -69,13 +69,13 @@ func _process(delta):
     else:
         # Animation: walk
         var duration = walkedDistancePerWalkCycle / float(abs(walkingSpeed))
-        var normalizedTime = fposmod(time, duration) / duration
+        var normalizedTime = fposmod(_time, duration) / duration
 
         legsFrame = floor(normalizedTime * (framesPerWalkCycle - 1))
 
         armAngle = armAngleOffset + armSwingAmplitude * sin(2 * PI * normalizedTime + 0.25 * PI)
 
 
-    self.spriteArm.rotation = armAngle
+    self._spriteArm.rotation = armAngle
 
-    self.spriteLegs.frame = legsFrame
+    self._spriteLegs.frame = legsFrame
