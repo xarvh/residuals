@@ -17,15 +17,33 @@ const walkingSpeed = 10
 #
 # internals
 #
+var tilemap
 var sprite
 var animation_player
 
 func _ready():
+    self.tilemap = self.get_node('TileMap')
     self.sprite = self.get_node('HumanCharacter')
     self.animation_player = self.sprite.get_node("AnimationPlayer")
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
+#
+#
+#
+func _unhandled_input(event):
+
+    if event is InputEventMouseButton and event.pressed and event.button_index == BUTTON_LEFT:
+        # TODO initiate action
+        print("PRESSED")
+
+    var tileCoordinates = self.tilemap.world_to_map(self.tilemap.get_local_mouse_position())
+
+#    print("lol", event)
+
+
+#
+#
+#
 func _process(delta):
 
     if Input.is_action_just_pressed(inputQuit):

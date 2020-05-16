@@ -134,9 +134,9 @@ shader_param/b1 = Color( 0.513726, 0.207843, 0.0235294, 1 )
 [sub_resource type="ShaderMaterial" id=6]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
-shader_param/r1 = Color( 1, 0, 0, 1 )
+shader_param/r1 = Color( 0.462745, 0.203922, 0, 1 )
 shader_param/g0 = Color( 0, 0, 0, 1 )
-shader_param/g1 = Color( 0, 1, 0, 1 )
+shader_param/g1 = Color( 0.568627, 0.568627, 0.568627, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
