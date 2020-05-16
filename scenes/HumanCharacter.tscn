@@ -115,29 +115,29 @@ tracks/1/keys = {
 
 [sub_resource type="ShaderMaterial" id=4]
 shader = ExtResource( 5 )
-shader_param/r0 = Color( 0.5, 0, 0, 1 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.909804, 0.52549, 0.0745098, 1 )
 shader_param/g0 = Color( 0.00392157, 0.196078, 0.168627, 1 )
 shader_param/g1 = Color( 0.0392157, 0.721569, 0.737255, 1 )
-shader_param/b0 = Color( 0, 0, 0.5, 1 )
+shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.85098, 0, 1, 1 )
 
 [sub_resource type="ShaderMaterial" id=5]
 shader = ExtResource( 5 )
-shader_param/r0 = Color( 0.5, 0, 0, 1 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.941176, 0.6, 0.00784314, 1 )
-shader_param/g0 = Color( 0, 0.5, 0, 1 )
+shader_param/g0 = Color( 0, 0, 0, 1 )
 shader_param/g1 = Color( 0, 0.0509804, 0.176471, 1 )
-shader_param/b0 = Color( 0, 0, 0.5, 1 )
+shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.513726, 0.207843, 0.0235294, 1 )
 
 [sub_resource type="ShaderMaterial" id=6]
 shader = ExtResource( 5 )
-shader_param/r0 = Color( 0.5, 0, 0, 1 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 1, 0, 0, 1 )
-shader_param/g0 = Color( 0, 0.5, 0, 1 )
+shader_param/g0 = Color( 0, 0, 0, 1 )
 shader_param/g1 = Color( 0, 1, 0, 1 )
-shader_param/b0 = Color( 0, 0, 0.5, 1 )
+shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
 [node name="Node2D" type="Node2D"]
