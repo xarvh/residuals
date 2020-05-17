@@ -28,6 +28,16 @@ __meta__ = {
 "_editor_description_": ""
 }
 
+[node name="CellHighlight" type="ColorRect" parent="TileMap"]
+margin_left = 1.0
+margin_top = 1.0
+margin_right = 9.0
+margin_bottom = 9.0
+color = Color( 1, 1, 1, 0.462745 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="HumanCharacter" parent="." instance=ExtResource( 3 )]
 position = Vector2( 34.8328, 23.3723 )
 scale = Vector2( 1, 1 )
