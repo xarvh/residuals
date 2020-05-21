@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://assets/legs.png" type="Texture" id=1]
 [ext_resource path="res://assets/torso_and_head.png" type="Texture" id=2]
 [ext_resource path="res://assets/arm.png" type="Texture" id=3]
 [ext_resource path="res://assets/pickaxe.png" type="Texture" id=4]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=5]
+[ext_resource path="res://assets/humanShadow.png" type="Texture" id=6]
 
 [sub_resource type="Animation" id=1]
 resource_name = "Idle"
@@ -74,7 +75,7 @@ tracks/1/keys = {
 "times": PoolRealArray( 1, 1.5 ),
 "transitions": PoolRealArray( 1, 1 ),
 "update": 0,
-"values": [ Vector2( 0, -1 ), Vector2( 0, 0 ) ]
+"values": [ Vector2( 0, -7 ), Vector2( 0, -6 ) ]
 }
 tracks/2/type = "value"
 tracks/2/path = NodePath("Legs/Torso+Head:rotation_degrees")
@@ -156,6 +157,15 @@ shader_param/g1 = Color( 0.568627, 0.568627, 0.568627, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
+[sub_resource type="ShaderMaterial" id=8]
+shader = ExtResource( 5 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
+shader_param/r1 = Color( 0, 0, 0, 0.25098 )
+shader_param/g0 = Color( 0, 0, 0, 1 )
+shader_param/g1 = Color( 0, 1, 0, 1 )
+shader_param/b0 = Color( 0, 0, 0, 1 )
+shader_param/b1 = Color( 0, 0, 1, 1 )
+
 [node name="Node2D" type="Node2D"]
 position = Vector2( 183, 129 )
 scale = Vector2( 10, 10 )
@@ -169,10 +179,10 @@ anims/Walk = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
 material = SubResource( 5 )
-position = Vector2( -0.179621, -5.80772 )
+position = Vector2( 0, -6 )
 texture = ExtResource( 1 )
 hframes = 6
-frame = 1
+frame = 3
 
 [node name="Torso+Head" type="Sprite" parent="Legs"]
 material = SubResource( 6 )
@@ -183,7 +193,7 @@ offset = Vector2( 0.0658932, -1.66441 )
 [node name="Arm" type="Sprite" parent="Legs/Torso+Head"]
 material = SubResource( 5 )
 position = Vector2( 0.0518665, -2.2413 )
-rotation = -2.72271
+rotation = -0.346533
 texture = ExtResource( 3 )
 offset = Vector2( -0.495468, 0.845141 )
 
@@ -193,3 +203,9 @@ position = Vector2( -26.1241, -2.60694 )
 rotation = 1.5708
 texture = ExtResource( 4 )
 offset = Vector2( 5.39905, -30.5824 )
+
+[node name="humanShadow" type="Sprite" parent="."]
+material = SubResource( 8 )
+position = Vector2( -0.200247, -0.0411348 )
+z_index = -1
+texture = ExtResource( 6 )

@@ -73,6 +73,6 @@ offset = Vector2( 0.339409, -22.8113 )
 
 [node name="treeShadow" type="Sprite" parent="YSort/tree"]
 material = SubResource( 3 )
-position = Vector2( 0, -3 )
+position = Vector2( 0.299999, 1.20001 )
 z_index = -1
 texture = ExtResource( 6 )
