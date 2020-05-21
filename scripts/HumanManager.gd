@@ -19,14 +19,16 @@ const walkingSpeed = 10
 #
 var tilemap
 var cellHighlight
-var sprite
+var player
 var animation_player
 
 func _ready():
     self.tilemap = self.get_node('TileMap')
     self.cellHighlight = self.tilemap.get_node('CellHighlight')
-    self.sprite = self.get_node('HumanCharacter')
-    self.animation_player = self.sprite.get_node("AnimationPlayer")
+
+    var ySort = self.get_node('YSort')
+    self.player = ySort.get_node('HumanCharacter')
+    self.animation_player = self.player.get_node("AnimationPlayer")
 
     self.cellHighlight.visible = false
     self.animation_player.connect("animation_finished", self, "_on_animation_finished")
@@ -87,13 +89,13 @@ func walk_or_idle(dx, dy, delta):
     if dx or dy:
         var n = sqrt(dx * dx + dy * dy)
 
-        self.sprite.position.x += dx / n * delta * walkingSpeed
-        self.sprite.position.y += dy / n * delta * walkingSpeed
+        self.player.position.x += dx / n * delta * walkingSpeed
+        self.player.position.y += dy / n * delta * walkingSpeed
 
         self.animation_player.play("Walk")
 
-        if dx < 0: self.sprite.scale.x = -1
-        if dx > 0: self.sprite.scale.x = 1
+        if dx < 0: self.player.scale.x = -1
+        if dx > 0: self.player.scale.x = 1
 
     else:
         self.animation_player.play("Idle")

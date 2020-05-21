@@ -150,7 +150,7 @@ shader_param/b1 = Color( 0.513726, 0.207843, 0.0235294, 1 )
 [sub_resource type="ShaderMaterial" id=7]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
-shader_param/r1 = Color( 0.462745, 0.203922, 0, 1 )
+shader_param/r1 = Color( 0.298039, 0.129412, 0, 1 )
 shader_param/g0 = Color( 0, 0, 0, 1 )
 shader_param/g1 = Color( 0.568627, 0.568627, 0.568627, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
@@ -169,6 +169,7 @@ anims/Walk = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
 material = SubResource( 5 )
+position = Vector2( -0.179621, -5.80772 )
 texture = ExtResource( 1 )
 hframes = 6
 frame = 1
@@ -183,13 +184,12 @@ offset = Vector2( 0.0658932, -1.66441 )
 material = SubResource( 5 )
 position = Vector2( 0.0518665, -2.2413 )
 rotation = -2.72271
-z_index = 1
 texture = ExtResource( 3 )
 offset = Vector2( -0.495468, 0.845141 )
 
 [node name="Pickaxe" type="Sprite" parent="Legs/Torso+Head/Arm"]
 material = SubResource( 7 )
-position = Vector2( 3.306, 3.34567 )
-rotation = 1.74096
-z_index = -1
+position = Vector2( -26.1241, -2.60694 )
+rotation = 1.5708
 texture = ExtResource( 4 )
+offset = Vector2( 5.39905, -30.5824 )
