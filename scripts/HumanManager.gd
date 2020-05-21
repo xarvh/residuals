@@ -29,7 +29,6 @@ func _ready():
     self.animation_player = self.sprite.get_node("AnimationPlayer")
 
     self.cellHighlight.visible = false
-    self.animation_player.play("Idle")
     self.animation_player.connect("animation_finished", self, "_on_animation_finished")
 
 
