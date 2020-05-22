@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://assets/legs.png" type="Texture" id=1]
 [ext_resource path="res://assets/torso_and_head.png" type="Texture" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://assets/pickaxe.png" type="Texture" id=4]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=5]
 [ext_resource path="res://assets/humanShadow.png" type="Texture" id=6]
+[ext_resource path="res://assets/footstep.wav" type="AudioStream" id=7]
 
 [sub_resource type="Animation" id=1]
 resource_name = "Idle"
@@ -102,7 +103,13 @@ tracks/3/keys = {
 "values": [ 1, 0, 3 ]
 }
 
-[sub_resource type="Animation" id=4]
+[sub_resource type="AudioStreamRandomPitch" id=4]
+audio_stream = ExtResource( 7 )
+
+[sub_resource type="AudioStreamRandomPitch" id=5]
+audio_stream = ExtResource( 7 )
+
+[sub_resource type="Animation" id=6]
 length = 6.0
 loop = true
 tracks/0/type = "value"
@@ -129,8 +136,26 @@ tracks/1/keys = {
 "update": 0,
 "values": [ 21.1757, -52.7455 ]
 }
+tracks/2/type = "audio"
+tracks/2/path = NodePath("Footsteps")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"clips": [ {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": SubResource( 4 )
+}, {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": SubResource( 5 )
+} ],
+"times": PoolRealArray( 0, 3 )
+}
 
-[sub_resource type="ShaderMaterial" id=5]
+[sub_resource type="ShaderMaterial" id=7]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.909804, 0.52549, 0.0745098, 1 )
@@ -139,7 +164,7 @@ shader_param/g1 = Color( 0.0392157, 0.721569, 0.737255, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.85098, 0, 1, 1 )
 
-[sub_resource type="ShaderMaterial" id=6]
+[sub_resource type="ShaderMaterial" id=8]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.941176, 0.6, 0.00784314, 1 )
@@ -148,7 +173,7 @@ shader_param/g1 = Color( 0, 0.0509804, 0.176471, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.513726, 0.207843, 0.0235294, 1 )
 
-[sub_resource type="ShaderMaterial" id=7]
+[sub_resource type="ShaderMaterial" id=9]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.298039, 0.129412, 0, 1 )
@@ -157,7 +182,7 @@ shader_param/g1 = Color( 0.568627, 0.568627, 0.568627, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
-[sub_resource type="ShaderMaterial" id=8]
+[sub_resource type="ShaderMaterial" id=10]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0, 0, 0, 0.25098 )
@@ -175,37 +200,41 @@ playback_speed = 6.0
 anims/Idle = SubResource( 1 )
 anims/RaiseTool = SubResource( 2 )
 anims/SwingTool = SubResource( 3 )
-anims/Walk = SubResource( 4 )
+anims/Walk = SubResource( 6 )
+
+[node name="Footsteps" type="AudioStreamPlayer2D" parent="."]
+scale = Vector2( 1, 1 )
+stream = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
-material = SubResource( 5 )
+material = SubResource( 7 )
 position = Vector2( 0, -6 )
 texture = ExtResource( 1 )
 hframes = 6
-frame = 3
+frame = 2
 
 [node name="Torso+Head" type="Sprite" parent="Legs"]
-material = SubResource( 6 )
+material = SubResource( 8 )
 position = Vector2( -0.0658932, 2.66441 )
 texture = ExtResource( 2 )
 offset = Vector2( 0.0658932, -1.66441 )
 
 [node name="Arm" type="Sprite" parent="Legs/Torso+Head"]
-material = SubResource( 5 )
+material = SubResource( 7 )
 position = Vector2( 0.0518665, -2.2413 )
-rotation = -0.346533
+rotation = -0.828039
 texture = ExtResource( 3 )
 offset = Vector2( -0.495468, 0.845141 )
 
 [node name="Pickaxe" type="Sprite" parent="Legs/Torso+Head/Arm"]
-material = SubResource( 7 )
+material = SubResource( 9 )
 position = Vector2( -26.1241, -2.60694 )
 rotation = 1.5708
 texture = ExtResource( 4 )
 offset = Vector2( 5.39905, -30.5824 )
 
 [node name="humanShadow" type="Sprite" parent="."]
-material = SubResource( 8 )
+material = SubResource( 10 )
 position = Vector2( -0.200247, -0.0411348 )
 z_index = -1
 texture = ExtResource( 6 )

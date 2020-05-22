@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://assets/tree.png" type="Texture" id=1]
 [ext_resource path="res://scripts/HumanManager.gd" type="Script" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=4]
 [ext_resource path="res://tileset/tileset.tres" type="TileSet" id=5]
 [ext_resource path="res://assets/treeShadow.png" type="Texture" id=6]
+[ext_resource path="res://assets/footstep.wav" type="AudioStream" id=7]
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
@@ -58,16 +59,17 @@ __meta__ = {
 }
 
 [node name="YSort" type="YSort" parent="."]
-scale = Vector2( 1, 1 )
 
 [node name="HumanCharacter" parent="YSort" instance=ExtResource( 3 )]
 position = Vector2( 34.8328, 23.3723 )
 scale = Vector2( 1, 1 )
 
+[node name="Footsteps" type="AudioStreamPlayer2D" parent="YSort/HumanCharacter"]
+stream = ExtResource( 7 )
+
 [node name="tree" type="Sprite" parent="YSort"]
 material = SubResource( 2 )
 position = Vector2( 52.0002, 54.8887 )
-scale = Vector2( 1, 1 )
 texture = ExtResource( 1 )
 offset = Vector2( 0.339409, -22.8113 )
 
