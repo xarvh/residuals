@@ -61,7 +61,7 @@ __meta__ = {
 [node name="YSort" type="YSort" parent="."]
 
 [node name="HumanCharacter" parent="YSort" instance=ExtResource( 3 )]
-position = Vector2( 34.8328, 23.3723 )
+position = Vector2( 0, 23.372 )
 scale = Vector2( 1, 1 )
 
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="YSort/HumanCharacter"]

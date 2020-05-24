@@ -21,6 +21,7 @@ var tilemap
 var cellHighlight
 var player
 var animation_player
+var toolTargetCell
 
 func _ready():
     self.tilemap = self.get_node('TileMap')
@@ -31,6 +32,7 @@ func _ready():
     self.animation_player = self.player.get_node("AnimationPlayer")
 
     self.cellHighlight.visible = false
+    self.toolTargetCell = null
     self.animation_player.connect("animation_finished", self, "_on_animation_finished")
 
 
@@ -45,23 +47,26 @@ func _process(delta):
     var dx = -1 if Input.is_action_pressed(inputLeft) else 1 if Input.is_action_pressed(inputRight) else 0
     var dy = -1 if Input.is_action_pressed(inputUp) else 1 if Input.is_action_pressed(inputDown) else 0
 
-    # TODO: allow use of dx dy
-    if self.cellHighlight.visible:
-      self.cellHighlight.rect_position = self.tilemap.world_to_map(self.tilemap.get_local_mouse_position()) * self.tilemap.cell_size
+    var mouse_cell = self.tilemap.world_to_map(self.tilemap.get_local_mouse_position())
+    var cell_size = self.tilemap.cell_size
+    var player_cell = (self.player.position / cell_size).floor()
+    var selected_cell = (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
 
-    self.cellHighlight.visible = self.animation_player.current_animation == "RaiseTool"
+    self.cellHighlight.visible = self.animation_player.current_animation == 'Idle'
+    if self.cellHighlight.visible:
+        self.cellHighlight.rect_position = selected_cell * cell_size
 
     match self.animation_player.current_animation:
         "Idle":
-            walk_or_idle(dx, dy, delta)
+            if Input.is_action_pressed(inputUseTool):
+                # TODO turn towards target cell
+                self.animation_player.play("SwingTool")
+                self.toolTargetCell = selected_cell
+            else:
+                walk_or_idle(dx, dy, delta)
 
         "Walk":
             walk_or_idle(dx, dy, delta)
-
-        "RaiseTool":
-            # TODO allow cancelling the swing, going back to Idle
-            if Input.is_action_just_released(inputUseTool):
-                self.animation_player.play("SwingTool")
 
         "SwingTool":
             pass
@@ -74,15 +79,13 @@ func _unhandled_input(event):
     match self.animation_player.current_animation:
         "Idle":
             if event.is_pressed() and InputMap.event_is_action(event, inputUseTool):
-                self.animation_player.play("RaiseTool")
-                self.cellHighlight.visible = true
+                pass
 
 
 func _on_animation_finished(name):
     match name:
         "SwingTool":
-            # TODO apply tool effect
-            pass
+            print('doing stuff to cell', toolTargetCell)
 
 
 func walk_or_idle(dx, dy, delta):
