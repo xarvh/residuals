@@ -1,0 +1,4 @@
+extends AnimationPlayer
+
+
+signal signalSwingHit()

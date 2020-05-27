@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://assets/legs.png" type="Texture" id=1]
 [ext_resource path="res://assets/torso_and_head.png" type="Texture" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=5]
 [ext_resource path="res://assets/humanShadow.png" type="Texture" id=6]
 [ext_resource path="res://assets/footstep.wav" type="AudioStream" id=7]
+[ext_resource path="res://scripts/HumanCharacter.gd" type="Script" id=8]
 
 [sub_resource type="Animation" id=1]
 resource_name = "Idle"
@@ -102,6 +103,20 @@ tracks/3/keys = {
 "update": 1,
 "values": [ 1, 0, 3 ]
 }
+tracks/4/type = "method"
+tracks/4/path = NodePath("AnimationPlayer")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 1.5 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ "signalSwingHit" ],
+"method": "emit_signal"
+} ]
+}
 
 [sub_resource type="AudioStreamRandomPitch" id=4]
 audio_stream = ExtResource( 7 )
@@ -191,7 +206,7 @@ shader_param/g1 = Color( 0, 1, 0, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
-[node name="Node2D" type="Node2D"]
+[node name="Root" type="Node2D"]
 position = Vector2( 183, 129 )
 scale = Vector2( 10, 10 )
 
@@ -201,13 +216,14 @@ anims/Idle = SubResource( 1 )
 anims/RaiseTool = SubResource( 2 )
 anims/SwingTool = SubResource( 3 )
 anims/Walk = SubResource( 6 )
+script = ExtResource( 8 )
 
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="."]
 stream = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
 material = SubResource( 7 )
-position = Vector2( 0, -6 )
+position = Vector2( 0, -7 )
 texture = ExtResource( 1 )
 hframes = 6
 frame = 3

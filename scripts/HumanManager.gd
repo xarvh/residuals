@@ -33,7 +33,8 @@ func _ready():
 
     self.cellHighlight.visible = false
     self.toolTargetCell = null
-    self.animation_player.connect("animation_finished", self, "_on_animation_finished")
+    self.animation_player.connect("animation_finished", self, "_onAnimationFinished")
+    self.animation_player.connect("signalSwingHit", self, "_onSignalSwingHit")
 
 
 #
@@ -82,10 +83,15 @@ func _unhandled_input(event):
                 pass
 
 
-func _on_animation_finished(name):
+func _onAnimationFinished(name):
     match name:
         "SwingTool":
-            print('doing stuff to cell', toolTargetCell)
+            pass
+
+
+func _onSignalSwingHit():
+    print('doing stuff to cell', self.toolTargetCell)
+
 
 
 func walk_or_idle(dx, dy, delta):
