@@ -113,8 +113,8 @@ tracks/4/keys = {
 "times": PoolRealArray( 1.5 ),
 "transitions": PoolRealArray( 1 ),
 "values": [ {
-"args": [ "signalSwingHit" ],
-"method": "emit_signal"
+"args": [  ],
+"method": "_onSwingHit"
 } ]
 }
 
@@ -226,7 +226,7 @@ material = SubResource( 7 )
 position = Vector2( 0, -7 )
 texture = ExtResource( 1 )
 hframes = 6
-frame = 3
+frame = 1
 
 [node name="Torso+Head" type="Sprite" parent="Legs"]
 material = SubResource( 8 )

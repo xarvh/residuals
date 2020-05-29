@@ -1,4 +1,8 @@
 extends AnimationPlayer
 
 
-signal signalSwingHit()
+const meta = preload('res://scripts/meta.gd')
+
+
+func _onSwingHit():
+    meta.callAncestorMethod(self, "playerToolSwingHit")
