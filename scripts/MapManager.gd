@@ -4,7 +4,6 @@ extends Node2D
 #
 # Config
 #
-
 const inputQuit = "ui_cancel"
 
 
@@ -43,7 +42,7 @@ func playerToolSwingStart():
 
 
 func playerToolSwingHit():
-    print("hit: ", toolTargetCell)
+    var targets = findAtCell(toolTargetCell))
 
 
 #
@@ -57,3 +56,16 @@ func getTargetCell():
     var player_cell = getPlayerCell()
     return (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
 
+
+func findAtCell(cell):
+    var minx = cell.x * tilemap.cell_size.x
+    var maxx = minx + tilemap.cell_size.x - 1
+    var miny = cell.y * tilemap.cell_size.y
+    var maxy = miny + tilemap.cell_size.y - 1
+
+    var r = []
+    for n in ySort.get_children():
+        if minx <= n.position.x and n.position.x <= maxx and miny <= n.position.y and n.position.y <= maxy:
+              r.append(n)
+
+    return r
