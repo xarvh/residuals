@@ -32,10 +32,12 @@ func _process(delta):
     match self.animation_player.current_animation:
         "Idle":
             if Input.is_action_pressed(inputUseTool):
-                # TODO turn towards target cell
+                var targetPos = meta.callAncestorMethod(self, "playerToolSwingStart")
+                var r = targetPos - self.position
+                if r.x > 0: self.scale.x = 1
+                if r.x < 0: self.scale.x = -1
                 self.animation_player.play("SwingTool")
 
-                meta.callAncestorMethod(self, "playerToolSwingStart")
             else:
                 _walk_or_idle(dx, dy, delta)
 

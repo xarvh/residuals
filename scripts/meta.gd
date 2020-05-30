@@ -1,4 +1,5 @@
 
+# TODO varargs
 static func callAncestorMethod(child, methodName):
     var parent = child.get_parent()
 
@@ -8,6 +9,6 @@ static func callAncestorMethod(child, methodName):
       return null
 
     if parent.has_method(methodName):
-        parent.call(methodName)
+        return parent.call(methodName)
     else:
-        callAncestorMethod(parent, methodName)
+        return callAncestorMethod(parent, methodName)
