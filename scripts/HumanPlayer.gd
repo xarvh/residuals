@@ -19,7 +19,10 @@ const walkingSpeed = 10
 #
 # Properties
 #
-onready var animation_player = get_node("AnimationPlayer")
+onready var animationPlayer = get_node("AnimationPlayer")
+onready var mapManager = meta.getAncestor(self, 'MapManager')
+
+onready var toolTargetCell = null
 
 
 #
@@ -29,14 +32,15 @@ func _process(delta):
     var dx = -1 if Input.is_action_pressed(inputLeft) else 1 if Input.is_action_pressed(inputRight) else 0
     var dy = -1 if Input.is_action_pressed(inputUp) else 1 if Input.is_action_pressed(inputDown) else 0
 
-    match self.animation_player.current_animation:
+    match self.animationPlayer.current_animation:
         "Idle":
             if Input.is_action_pressed(inputUseTool):
-                var targetPos = meta.callAncestorMethod(self, "playerToolSwingStart")
+                toolTargetCell = getTargetCell()
+                var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * mapManager.tilemap.cell_size
                 var r = targetPos - self.position
                 if r.x > 0: self.scale.x = 1
                 if r.x < 0: self.scale.x = -1
-                self.animation_player.play("SwingTool")
+                self.animationPlayer.play("SwingTool")
 
             else:
                 _walk_or_idle(dx, dy, delta)
@@ -48,17 +52,32 @@ func _process(delta):
             pass
 
         _:
-          self.animation_player.play("Idle")
+          self.animationPlayer.play("Idle")
 
 
 #
 # Input interrupts
 #
 func _unhandled_input(event):
-    match self.animation_player.current_animation:
+    match self.animationPlayer.current_animation:
         "Idle":
             if event.is_pressed() and InputMap.event_is_action(event, inputUseTool):
                 pass
+
+
+#
+# Hooks
+#
+func playerToolSwingHit():
+    var targets = mapManager.findAtCell(toolTargetCell)
+    print('hit', targets)
+
+
+func getTargetCell():
+    var mouse_cell = meta.callAncestorMethod(self, 'getMouseCell')
+    var player_cell = mapManager.positionToCell(position)
+    return (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
+
 
 
 #
@@ -71,10 +90,10 @@ func _walk_or_idle(dx, dy, delta):
         self.position.x += dx / n * delta * walkingSpeed
         self.position.y += dy / n * delta * walkingSpeed
 
-        self.animation_player.play("Walk")
+        self.animationPlayer.play("Walk")
 
         if dx < 0: self.scale.x = -1
         if dx > 0: self.scale.x = 1
 
     else:
-        self.animation_player.play("Idle")
+        self.animationPlayer.play("Idle")
