@@ -67,17 +67,17 @@ position = Vector2( 37.7074, 53.1583 )
 scale = Vector2( 1, 1 )
 script = ExtResource( 7 )
 
-[node name="Tree" type="Sprite" parent="YSort"]
+[node name="Tree" type="Node2D" parent="YSort"]
 material = SubResource( 2 )
 position = Vector2( 52, 55 )
+script = ExtResource( 8 )
+
+[node name="Stump" type="Sprite" parent="YSort/Tree"]
+material = SubResource( 2 )
+scale = Vector2( 1, 1 )
 texture = ExtResource( 1 )
 offset = Vector2( 0.339409, -22.8113 )
 hframes = 2
-script = ExtResource( 8 )
-
-[node name="AxeOnWood" type="AudioStreamPlayer2D" parent="YSort/Tree"]
-scale = Vector2( 1, 1 )
-stream = ExtResource( 9 )
 
 [node name="Trunk" type="Sprite" parent="YSort/Tree"]
 material = SubResource( 2 )
@@ -93,3 +93,7 @@ material = SubResource( 3 )
 position = Vector2( 0.299999, 1.20001 )
 z_index = -1
 texture = ExtResource( 6 )
+
+[node name="AxeOnWood" type="AudioStreamPlayer2D" parent="YSort/Tree"]
+scale = Vector2( 1, 1 )
+stream = ExtResource( 9 )

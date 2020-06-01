@@ -1,31 +1,85 @@
-extends Sprite
+extends Node2D
 
 
-const maxBounceTime = 0.5
-const maxBounceAmplitude = 0.005 * PI
-const bounceSpeed = 10 * PI
+#
+# Config
+#
+const trunkShakeDuration = 0.5
+const trunkShakeAmplitude = 0.005 * PI
+const trunkShakeSpeed = 10 * PI
+
+const totalTimeToFall = 1.3
+
+const stumpShakeDuration = 0.1
+const stumpShakeAmplitude = 1
+const stumpShakeSpeed = 10 * PI
+
+const trunkHp = 1
+const stumpHp = 1000
 
 
-onready var bounceTime = 0
+#
+#
+#
 onready var trunk = get_node('Trunk')
+onready var stump = get_node('Stump')
 onready var axeOnWood = get_node('AxeOnWood')
 
+enum State {
+    TrunkUp
+    TrunkFalling
+    Stump
+}
 
-func _ready():
-    pass
+onready var state = State.TrunkUp if trunk else State.Stump
+onready var damage = 0
+onready var timeLeftToShake = 0
+onready var timeSinceFallingStart = 0
 
 
 func _process(dt):
-    if bounceTime > 0:
-      bounceTime -= dt
-      if trunk:
-          trunk.rotation = maxBounceAmplitude * (bounceTime / maxBounceTime) * sin(bounceTime * bounceSpeed)
 
+    if timeLeftToShake > 0:
+        timeLeftToShake -= dt
+        if state == State.TrunkUp:
+            trunk.rotation = trunkShakeAmplitude * (timeLeftToShake / trunkShakeDuration) * sin(timeLeftToShake * trunkShakeSpeed)
+        else:
+            stump.position.x = stumpShakeAmplitude * (timeLeftToShake / stumpShakeDuration) * sin(timeLeftToShake * stumpShakeSpeed)
+
+    if state == State.TrunkFalling:
+        timeSinceFallingStart += dt
+        if timeSinceFallingStart < totalTimeToFall:
+            var t = timeSinceFallingStart / totalTimeToFall
+            trunk.rotation = 0.5 * PI * t * t
+        else:
+            state = State.Stump
+            print('spawn wood')
+            # TODO make sound
+            # TODO spawn wood/sap
+            trunk.queue_free()
+            trunk = null
 
 
 func onHitByTool(toolName, toolPower, player):
+    # TODO if toolName == 'Axe'
+
     axeOnWood.play()
-    if trunk:
-        bounceTime = maxBounceTime
-    else:
-        pass
+    damage += toolPower
+
+    match state:
+        State.TrunkUp:
+            if damage < trunkHp:
+                timeLeftToShake = trunkShakeDuration
+            else:
+                state = State.TrunkFalling
+                timeLeftToShake = 0
+                damage = 0
+                # TODO wood breaking sound
+
+        _:
+            if damage < stumpHp:
+                timeLeftToShake = stumpShakeDuration
+            else:
+                # TODO spawn wood
+                # TODO make breaking sound
+                self.queue_free()
