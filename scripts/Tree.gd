@@ -8,6 +8,7 @@ const bounceSpeed = 10 * PI
 
 onready var bounceTime = 0
 onready var trunk = get_node('Trunk')
+onready var axeOnWood = get_node('AxeOnWood')
 
 
 func _ready():
@@ -21,7 +22,9 @@ func _process(dt):
           trunk.rotation = maxBounceAmplitude * (bounceTime / maxBounceTime) * sin(bounceTime * bounceSpeed)
 
 
+
 func onHitByTool(toolName, toolPower, player):
+    axeOnWood.play()
     if trunk:
         bounceTime = maxBounceTime
     else:
