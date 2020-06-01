@@ -69,8 +69,11 @@ func _unhandled_input(event):
 # Hooks
 #
 func playerToolSwingHit():
+    var axePower = 10
     var targets = mapManager.findAtCell(toolTargetCell)
-    print('hit', targets)
+    for t in targets:
+        if t.has_method('onHitByTool'):
+            t.onHitByTool('axe', axePower, self)
 
 
 func getTargetCell():
