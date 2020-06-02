@@ -14,8 +14,8 @@ const stumpShakeDuration = 0.1
 const stumpShakeAmplitude = 1
 const stumpShakeSpeed = 10 * PI
 
-const trunkHp = 1
-const stumpHp = 1000
+const trunkHp = 40
+const stumpHp = 40
 
 
 #
@@ -53,11 +53,13 @@ func _process(dt):
             trunk.rotation = 0.5 * PI * t * t
         else:
             state = State.Stump
-            print('spawn wood')
-            # TODO make sound
-            # TODO spawn wood/sap
+            for i in Env.rng.randi_range(12, 16):
+                var pos = self.position
+                pos.x += Env.rng.randf_range(0.5, 4) * Env.cellSize
+                Meta.callAncestorMethod(self, "spawnDrop", [ pos, Env.Item.Wood ])
             trunk.queue_free()
             trunk = null
+            # TODO make sound
 
 
 func onHitByTool(toolName, toolPower, player):
@@ -80,6 +82,8 @@ func onHitByTool(toolName, toolPower, player):
             if damage < stumpHp:
                 timeLeftToShake = stumpShakeDuration
             else:
-                # TODO spawn wood
-                # TODO make breaking sound
+                for i in Env.rng.randi_range(4, 9):
+                    Meta.callAncestorMethod(self, "spawnDrop", [ self.position, Env.Item.Wood ])
                 self.queue_free()
+                # TODO make breaking sound
+

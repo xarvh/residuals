@@ -1,9 +1,6 @@
 extends Node2D
 
 
-const meta = preload('res://scripts/meta.gd')
-
-
 #
 # Config
 #
@@ -20,7 +17,7 @@ const walkingSpeed = 10
 # Properties
 #
 onready var animationPlayer = get_node("AnimationPlayer")
-onready var mapManager = meta.getAncestor(self, 'MapManager')
+onready var mapManager = Meta.getAncestor(self, 'MapManager')
 
 onready var toolTargetCell = null
 
@@ -77,7 +74,7 @@ func playerToolSwingHit():
 
 
 func getTargetCell():
-    var mouse_cell = meta.callAncestorMethod(self, 'getMouseCell')
+    var mouse_cell = Meta.callAncestorMethod(self, 'getMouseCell')
     var player_cell = mapManager.positionToCell(position)
     return (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
 

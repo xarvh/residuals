@@ -19,6 +19,11 @@ config/name="Residuals"
 run/main_scene="res://scenes/Main.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Env="*res://scripts/Env.gd"
+Meta="*res://scripts/Meta.gd"
+
 [importer_defaults]
 
 texture={

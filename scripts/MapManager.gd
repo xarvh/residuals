@@ -1,6 +1,9 @@
 extends Node2D
 
 
+const Drop = preload('res://scenes/Drop.tscn')
+
+
 #
 # Config
 #
@@ -57,3 +60,13 @@ func findAtCell(cell):
               r.append(n)
 
     return r
+
+
+#
+#
+#
+func spawnDrop(position, type):
+    var drop = Drop.instance()
+    drop.position = position
+    drop.type = type
+    add_child(drop)

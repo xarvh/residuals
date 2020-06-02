@@ -1,3 +1,4 @@
+extends Node2D
 
 
 static func getAncestor(child, name):
@@ -14,8 +15,7 @@ static func getAncestor(child, name):
         return getAncestor(parent, name)
 
 
-# TODO varargs
-static func callAncestorMethod(child, methodName):
+static func callAncestorMethod(child, methodName, args = []):
     var parent = child.get_parent()
 
     if !parent:
@@ -24,6 +24,6 @@ static func callAncestorMethod(child, methodName):
       return null
 
     if parent.has_method(methodName):
-        return parent.call(methodName)
+        return parent.callv(methodName, args)
     else:
-        return callAncestorMethod(parent, methodName)
+        return callAncestorMethod(parent, methodName, args)
