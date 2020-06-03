@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/treeFalls.wav-97fa949f97cdc93b6cc88e573ada2dbd.sample"
+
+[deps]
+
+source_file="res://assets/treeFalls.wav"
+dest_files=[ "res://.import/treeFalls.wav-97fa949f97cdc93b6cc88e573ada2dbd.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

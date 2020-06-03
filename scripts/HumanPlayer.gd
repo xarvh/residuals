@@ -79,6 +79,10 @@ func getTargetCell():
     return (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
 
 
+func collectItem(type):
+    # TODO play sound?
+    print('collected: ', type)
+
 
 #
 # State helpers

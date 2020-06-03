@@ -8,7 +8,7 @@ const trunkShakeDuration = 0.5
 const trunkShakeAmplitude = 0.005 * PI
 const trunkShakeSpeed = 10 * PI
 
-const totalTimeToFall = 1.3
+const totalTimeToFall = 1.5
 
 const stumpShakeDuration = 0.1
 const stumpShakeAmplitude = 1
@@ -24,6 +24,7 @@ const stumpHp = 40
 onready var trunk = get_node('Trunk')
 onready var stump = get_node('Stump')
 onready var axeOnWood = get_node('AxeOnWood')
+onready var treeFalls = get_node('TreeFalls')
 
 enum State {
     TrunkUp
@@ -53,13 +54,15 @@ func _process(dt):
             trunk.rotation = 0.5 * PI * t * t
         else:
             state = State.Stump
+            treeFalls.stop()
+            # TODO play "poof" sound?
+            # TODO spawn a lot of leaves
             for i in Env.rng.randi_range(12, 16):
                 var pos = self.position
                 pos.x += Env.rng.randf_range(0.5, 4) * Env.cellSize
                 Meta.callAncestorMethod(self, "spawnDrop", [ pos, Env.Item.Wood ])
             trunk.queue_free()
             trunk = null
-            # TODO make sound
 
 
 func onHitByTool(toolName, toolPower, player):
@@ -76,7 +79,7 @@ func onHitByTool(toolName, toolPower, player):
                 state = State.TrunkFalling
                 timeLeftToShake = 0
                 damage = 0
-                # TODO wood breaking sound
+                treeFalls.play()
 
         _:
             if damage < stumpHp:
