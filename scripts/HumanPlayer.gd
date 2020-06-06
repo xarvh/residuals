@@ -80,7 +80,9 @@ func getTargetCell():
 
 
 func collectItem(type):
-    # TODO play sound?
+    var collect = get_node('Collect')
+    if not collect.playing or collect.get_playback_position() > 0.05:
+        collect.play()
     print('collected: ', type)
 
 
