@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/humanShadow.png-b5c5df6d8f86b0241075007ef08e7b34.stex"
+path="res://.import/tree.png-59df9d1cd36096ba9aea0dd5eaadd5c3.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/humanShadow.png"
-dest_files=[ "res://.import/humanShadow.png-b5c5df6d8f86b0241075007ef08e7b34.stex" ]
+source_file="res://scenes/tree/tree.png"
+dest_files=[ "res://.import/tree.png-59df9d1cd36096ba9aea0dd5eaadd5c3.stex" ]
 
 [params]
 

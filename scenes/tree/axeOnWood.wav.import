@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/treeFalls.wav-97fa949f97cdc93b6cc88e573ada2dbd.sample"
+path="res://.import/axeOnWood.wav-3c4627f965a27f86a1dc8b486cd1484e.sample"
 
 [deps]
 
-source_file="res://assets/treeFalls.wav"
-dest_files=[ "res://.import/treeFalls.wav-97fa949f97cdc93b6cc88e573ada2dbd.sample" ]
+source_file="res://scenes/tree/axeOnWood.wav"
+dest_files=[ "res://.import/axeOnWood.wav-3c4627f965a27f86a1dc8b486cd1484e.sample" ]
 
 [params]
 

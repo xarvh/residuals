@@ -17,7 +17,7 @@ const walkingSpeed = 10
 # Properties
 #
 onready var animationPlayer = get_node("AnimationPlayer")
-onready var mapManager = Meta.getAncestor(self, 'MapManager')
+onready var viewportManager = Meta.getAncestor(self, 'ViewportManager')
 
 onready var toolTargetCell = null
 
@@ -33,7 +33,7 @@ func _process(delta):
         "Idle":
             if Input.is_action_pressed(inputUseTool):
                 toolTargetCell = getTargetCell()
-                var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * mapManager.tilemap.cell_size
+                var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tilemap.cell_size
                 var r = targetPos - self.position
                 if r.x > 0: self.scale.x = 1
                 if r.x < 0: self.scale.x = -1
@@ -67,7 +67,7 @@ func _unhandled_input(event):
 #
 func playerToolSwingHit():
     var axePower = 10
-    var targets = mapManager.findAtCell(toolTargetCell)
+    var targets = viewportManager.findAtCell(toolTargetCell)
     for t in targets:
         if t.has_method('onHitByTool'):
             t.onHitByTool('axe', axePower, self)
@@ -75,7 +75,7 @@ func playerToolSwingHit():
 
 func getTargetCell():
     var mouse_cell = Meta.callAncestorMethod(self, 'getMouseCell')
-    var player_cell = mapManager.positionToCell(position)
+    var player_cell = viewportManager.positionToCell(position)
     return (mouse_cell - player_cell).clamped(sqrt(2)).round() + player_cell
 
 

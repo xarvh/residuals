@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/treeShadow.png-0d7ee2fe59e44a6643a6cedd59188d21.stex"
+path="res://.import/terrain_base.png-57eea27a47009ed319cf665027a0d7ff.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/treeShadow.png"
-dest_files=[ "res://.import/treeShadow.png-0d7ee2fe59e44a6643a6cedd59188d21.stex" ]
+source_file="res://scenes/map/terrain_base.png"
+dest_files=[ "res://.import/terrain_base.png-57eea27a47009ed319cf665027a0d7ff.stex" ]
 
 [params]
 
@@ -30,5 +30,5 @@ process/HDR_as_SRGB=false
 process/invert_color=false
 stream=false
 size_limit=0
-detect_3d=false
+detect_3d=true
 svg/scale=1.0

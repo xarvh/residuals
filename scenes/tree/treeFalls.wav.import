@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/footstep.wav-7d8363237db0283e202cdee78affc63e.sample"
+path="res://.import/treeFalls.wav-16e1163c6e3644eb7f85423d96d854d0.sample"
 
 [deps]
 
-source_file="res://assets/footstep.wav"
-dest_files=[ "res://.import/footstep.wav-7d8363237db0283e202cdee78affc63e.sample" ]
+source_file="res://scenes/tree/treeFalls.wav"
+dest_files=[ "res://.import/treeFalls.wav-16e1163c6e3644eb7f85423d96d854d0.sample" ]
 
 [params]
 

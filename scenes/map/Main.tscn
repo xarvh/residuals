@@ -1,17 +1,17 @@
 [gd_scene load_steps=18 format=2]
 
-[ext_resource path="res://assets/tree.png" type="Texture" id=1]
-[ext_resource path="res://scripts/MapManager.gd" type="Script" id=2]
-[ext_resource path="res://scenes/HumanCharacter.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/tree/tree.png" type="Texture" id=1]
+[ext_resource path="res://scenes/tree/Tree.gd" type="Script" id=2]
+[ext_resource path="res://scenes/map/tileset.tres" type="TileSet" id=3]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=4]
-[ext_resource path="res://tileset/tileset.tres" type="TileSet" id=5]
-[ext_resource path="res://assets/treeShadow.png" type="Texture" id=6]
-[ext_resource path="res://scripts/HumanPlayer.gd" type="Script" id=7]
-[ext_resource path="res://scripts/Tree.gd" type="Script" id=8]
-[ext_resource path="res://assets/axeOnWood.wav" type="AudioStream" id=9]
-[ext_resource path="res://scenes/Drop.tscn" type="PackedScene" id=10]
-[ext_resource path="res://assets/treeFalls.wav" type="AudioStream" id=11]
-[ext_resource path="res://assets/collect.wav" type="AudioStream" id=12]
+[ext_resource path="res://scenes/drop/Drop.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/tree/axeOnWood.wav" type="AudioStream" id=6]
+[ext_resource path="res://scenes/human/collect.wav" type="AudioStream" id=7]
+[ext_resource path="res://scenes/tree/treeShadow.png" type="Texture" id=8]
+[ext_resource path="res://scenes/tree/treeFalls.wav" type="AudioStream" id=9]
+[ext_resource path="res://scenes/human/HumanPlayer.gd" type="Script" id=10]
+[ext_resource path="res://scenes/map/MapManager.gd" type="Script" id=11]
+[ext_resource path="res://scenes/human/HumanCharacter.tscn" type="PackedScene" id=12]
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
@@ -22,13 +22,13 @@ shader_param/g1 = Color( 0.901961, 0.505882, 0, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.47451, 0.298039, 0, 1 )
 
-[sub_resource type="AudioStreamRandomPitch" id=5]
-audio_stream = ExtResource( 12 )
+[sub_resource type="AudioStreamRandomPitch" id=2]
+audio_stream = ExtResource( 7 )
 random_pitch = 3.0
 
-[sub_resource type="CircleShape2D" id=2]
+[sub_resource type="CircleShape2D" id=3]
 
-[sub_resource type="ShaderMaterial" id=3]
+[sub_resource type="ShaderMaterial" id=4]
 shader = ExtResource( 4 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.701961, 0.247059, 0, 1 )
@@ -37,7 +37,7 @@ shader_param/g1 = Color( 0, 0.45098, 0, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
-[sub_resource type="ShaderMaterial" id=4]
+[sub_resource type="ShaderMaterial" id=5]
 shader = ExtResource( 4 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0, 0, 0, 0.12549 )
@@ -46,14 +46,49 @@ shader_param/g1 = Color( 0, 0, 0, 0.25098 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 0, 0.501961 )
 
-[node name="MapManager" type="Node2D"]
-scale = Vector2( 10, 10 )
-script = ExtResource( 2 )
+[node name="ViewportManager" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 11 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="TileMap" type="TileMap" parent="."]
+[node name="HUD" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Belt" type="ColorRect" parent="HUD"]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_left = 20.0
+margin_top = 80.0
+margin_right = 60.0
+margin_bottom = 480.0
+color = Color( 1, 0.839216, 0.529412, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ToolSelection" type="ReferenceRect" parent="HUD/Belt"]
+margin_right = 40.0
+margin_bottom = 40.0
+border_color = Color( 0, 0, 0, 1 )
+editor_only = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Map" type="Node2D" parent="."]
+scale = Vector2( 10, 10 )
+
+[node name="TileMap" type="TileMap" parent="Map"]
 material = SubResource( 1 )
 z_index = -1
-tile_set = ExtResource( 5 )
+tile_set = ExtResource( 3 )
 cell_size = Vector2( 8, 8 )
 format = 1
 tile_data = PoolIntArray( -1, 0, 0, -65536, 0, 0, -65535, 0, 0, -65534, 0, 0, -65533, 0, 0, -65532, 0, 0, -65531, 0, 0, -65530, 0, 0, -65529, 0, 0, -65528, 0, 0, -65527, 0, 0, -65526, 0, 0, -65525, 0, 0, -65524, 0, 0, -65523, 0, 0, 65535, 0, 0, 0, 2, 0, 1, 0, 0, 2, 2, 4, 3, 2, 5, 4, 2, 5, 5, 2, 5, 6, 2, 5, 7, 2, 5, 8, 2, 5, 9, 2, 5, 10, 2, 5, 11, 2, 3, 12, 0, 0, 13, 0, 0, 131071, 0, 0, 65536, 0, 0, 65537, 0, 0, 65538, 2, 196611, 65539, 2, 262149, 65540, 2, 65541, 65541, 2, 262149, 65542, 2, 262149, 65543, 2, 262149, 65544, 2, 262149, 65545, 2, 262149, 65546, 2, 65541, 65547, 2, 262150, 65548, 0, 0, 65549, 0, 0, 65550, 0, 0, 65551, 0, 0, 65552, 0, 0, 65553, 0, 0, 65554, 0, 0, 196607, 0, 0, 131072, 0, 0, 131073, 2, 1, 131074, 2, 131075, 131075, 2, 262149, 131076, 2, 65541, 131077, 2, 65541, 131078, 2, 65541, 131079, 2, 262149, 131080, 2, 65541, 131081, 2, 262149, 131082, 2, 65541, 131083, 2, 262150, 131084, 0, 0, 131085, 0, 0, 131086, 0, 0, 131087, 0, 131072, 131088, 0, 0, 131089, 0, 0, 131090, 0, 0, 262143, 0, 0, 196608, 2, 196615, 196609, 0, 0, 196610, 2, 196611, 196611, 2, 65541, 196612, 2, 65541, 196613, 2, 65541, 196614, 2, 65541, 196615, 2, 65541, 196616, 2, 262149, 196617, 2, 262149, 196618, 2, 65541, 196619, 2, 262150, 196620, 0, 0, 196621, 2, 0, 196622, 0, 0, 196623, 0, 131074, 196624, 0, 0, 196625, 2, 0, 196626, 0, 0, 327679, 2, 4, 262144, 2, 196613, 262145, 2, 5, 262146, 2, 65540, 262147, 2, 262149, 262148, 2, 65541, 262149, 2, 262149, 262150, 2, 65541, 262151, 2, 65541, 262152, 2, 65541, 262153, 2, 65541, 262154, 2, 262149, 262155, 2, 262150, 262156, 0, 0, 262157, 0, 0, 262158, 0, 0, 262159, 0, 0, 262160, 0, 0, 262161, 0, 0, 262162, 0, 0, 393215, 2, 196611, 327680, 2, 65541, 327681, 2, 65541, 327682, 2, 262149, 327683, 2, 65541, 327684, 2, 262149, 327685, 2, 131076, 327686, 2, 327685, 327687, 2, 262148, 327688, 2, 65541, 327689, 2, 262149, 327690, 2, 65541, 327691, 2, 262150, 327692, 0, 0, 327693, 0, 3, 327694, 0, 0, 327695, 2, 0, 327696, 0, 0, 327697, 0, 131075, 327698, 0, 0, 458751, 2, 196611, 393216, 2, 65541, 393217, 2, 65541, 393218, 2, 65541, 393219, 2, 65541, 393220, 2, 262149, 393221, 2, 262150, 393222, 0, 0, 393223, 2, 196611, 393224, 2, 65541, 393225, 2, 65541, 393226, 2, 262149, 393227, 2, 262150, 393228, 0, 0, 393229, 0, 65537, 393230, 0, 0, 393231, 0, 0, 393232, 0, 0, 393233, 0, 1, 393234, 0, 0, 524287, 2, 196611, 458752, 2, 65541, 458753, 2, 65541, 458754, 2, 262149, 458755, 2, 262149, 458756, 2, 65541, 458757, 2, 196612, 458758, 2, 5, 458759, 2, 65540, 458760, 2, 262149, 458761, 2, 65541, 458762, 2, 262149, 458763, 2, 262150, 458764, 0, 0, 458765, 0, 65536, 458766, 0, 2, 458767, 0, 3, 458768, 0, 0, 458769, 0, 131074, 458770, 0, 0, 589823, 2, 196611, 524288, 2, 65541, 524289, 2, 262149, 524290, 2, 65541, 524291, 2, 262149, 524292, 2, 65541, 524293, 2, 262149, 524294, 2, 262149, 524295, 2, 65541, 524296, 2, 262149, 524297, 2, 65541, 524298, 2, 65541, 524299, 2, 262150, 524300, 0, 0, 524301, 0, 0, 524302, 0, 0, 524303, 0, 0, 524304, 0, 0, 524305, 0, 0, 524306, 0, 0, 655359, 2, 196611, 589824, 2, 262149, 589825, 2, 262149, 589826, 2, 65541, 589827, 2, 262149, 589828, 2, 262149, 589829, 2, 65541, 589830, 2, 65541, 589831, 2, 65541, 589832, 2, 262149, 589833, 2, 262149, 589834, 2, 65541, 589835, 2, 262150, 720895, 2, 327684, 655360, 2, 262148, 655361, 2, 65541, 655362, 2, 262149, 655363, 2, 65541, 655364, 2, 262149, 655365, 2, 262149, 655366, 2, 65541, 655367, 2, 65541, 655368, 2, 65541, 655369, 2, 262149, 655370, 2, 65541, 655371, 2, 196612, 655372, 2, 3, 720896, 2, 327684, 720897, 2, 327685, 720898, 2, 327685, 720899, 2, 327685, 720900, 2, 327685, 720901, 2, 327685, 720902, 2, 327685, 720903, 2, 327685, 720904, 2, 327685, 720905, 2, 327685, 720906, 2, 327685, 720907, 2, 327685, 720908, 2, 327683 )
@@ -61,7 +96,7 @@ __meta__ = {
 "_editor_description_": ""
 }
 
-[node name="CellHighlight" type="ColorRect" parent="TileMap"]
+[node name="CellHighlight" type="ColorRect" parent="Map/TileMap"]
 margin_right = 8.0
 margin_bottom = 8.0
 color = Color( 1, 1, 1, 0.462745 )
@@ -69,54 +104,54 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="YSort" type="YSort" parent="."]
+[node name="YSort" type="YSort" parent="Map"]
 
-[node name="Player" parent="YSort" instance=ExtResource( 3 )]
+[node name="Player" parent="Map/YSort" instance=ExtResource( 12 )]
 position = Vector2( 37.7074, 53.1583 )
 scale = Vector2( 1, 1 )
-script = ExtResource( 7 )
+script = ExtResource( 10 )
 
-[node name="Collect" type="AudioStreamPlayer2D" parent="YSort/Player"]
-stream = SubResource( 5 )
+[node name="Collect" type="AudioStreamPlayer2D" parent="Map/YSort/Player"]
+stream = SubResource( 2 )
 
-[node name="DropPickupArea" type="Area2D" parent="YSort/Player"]
+[node name="DropPickupArea" type="Area2D" parent="Map/YSort/Player"]
 visible = false
 collision_layer = 2
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="YSort/Player/DropPickupArea"]
-shape = SubResource( 2 )
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Map/YSort/Player/DropPickupArea"]
+shape = SubResource( 3 )
 
-[node name="Tree" type="Node2D" parent="YSort"]
-material = SubResource( 3 )
+[node name="Tree" type="Node2D" parent="Map/YSort"]
+material = SubResource( 4 )
 position = Vector2( 52, 55 )
-script = ExtResource( 8 )
+script = ExtResource( 2 )
 
-[node name="Stump" type="Sprite" parent="YSort/Tree"]
-material = SubResource( 3 )
+[node name="Stump" type="Sprite" parent="Map/YSort/Tree"]
+material = SubResource( 4 )
 texture = ExtResource( 1 )
 offset = Vector2( 0.339409, -22.8113 )
 hframes = 2
 
-[node name="Trunk" type="Sprite" parent="YSort/Tree"]
-material = SubResource( 3 )
+[node name="Trunk" type="Sprite" parent="Map/YSort/Tree"]
+material = SubResource( 4 )
 position = Vector2( 0.237793, -3.39476 )
 texture = ExtResource( 1 )
 offset = Vector2( 0.101616, -19.4165 )
 hframes = 2
 frame = 1
 
-[node name="Shadow" type="Sprite" parent="YSort/Tree"]
-material = SubResource( 4 )
+[node name="Shadow" type="Sprite" parent="Map/YSort/Tree"]
+material = SubResource( 5 )
 position = Vector2( 0.299999, 1.20001 )
 z_index = -1
-texture = ExtResource( 6 )
+texture = ExtResource( 8 )
 
-[node name="AxeOnWood" type="AudioStreamPlayer2D" parent="YSort/Tree"]
+[node name="AxeOnWood" type="AudioStreamPlayer2D" parent="Map/YSort/Tree"]
+stream = ExtResource( 6 )
+
+[node name="TreeFalls" type="AudioStreamPlayer2D" parent="Map/YSort/Tree"]
 stream = ExtResource( 9 )
 
-[node name="TreeFalls" type="AudioStreamPlayer2D" parent="YSort/Tree"]
-stream = ExtResource( 11 )
-
-[node name="Drop" parent="YSort" instance=ExtResource( 10 )]
+[node name="Drop" parent="Map/YSort" instance=ExtResource( 5 )]
 position = Vector2( 21.5235, 57.0664 )

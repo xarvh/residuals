@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/axeOnWood.wav-98d75db71fd2dff143aae8066b4ea2a8.sample"
+path="res://.import/collect.wav-8617be07d39252a5adee2f37e2d104dd.sample"
 
 [deps]
 
-source_file="res://assets/axeOnWood.wav"
-dest_files=[ "res://.import/axeOnWood.wav-98d75db71fd2dff143aae8066b4ea2a8.sample" ]
+source_file="res://scenes/human/collect.wav"
+dest_files=[ "res://.import/collect.wav-8617be07d39252a5adee2f37e2d104dd.sample" ]
 
 [params]
 

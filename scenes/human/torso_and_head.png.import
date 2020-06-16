@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/terrain_base.png-b0820d843c0c7c584a463fcd7312f7bd.stex"
+path="res://.import/torso_and_head.png-0641078d76c48f311f0122f44ccbb002.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/terrain_base.png"
-dest_files=[ "res://.import/terrain_base.png-b0820d843c0c7c584a463fcd7312f7bd.stex" ]
+source_file="res://scenes/human/torso_and_head.png"
+dest_files=[ "res://.import/torso_and_head.png-0641078d76c48f311f0122f44ccbb002.stex" ]
 
 [params]
 

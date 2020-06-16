@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/arm.png-d0188e57afd32a6e104c1ec46c733da9.stex"
+path="res://.import/arm.png-643db53630189735b2cceb279cec811b.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/arm.png"
-dest_files=[ "res://.import/arm.png-d0188e57afd32a6e104c1ec46c733da9.stex" ]
+source_file="res://scenes/human/arm.png"
+dest_files=[ "res://.import/arm.png-643db53630189735b2cceb279cec811b.stex" ]
 
 [params]
 

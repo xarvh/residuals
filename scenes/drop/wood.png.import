@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/legs.png-596110cf8f96368525e3806837955f1c.stex"
+path="res://.import/wood.png-5b775182c0425b537510232752a7e4ed.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/legs.png"
-dest_files=[ "res://.import/legs.png-596110cf8f96368525e3806837955f1c.stex" ]
+source_file="res://scenes/drop/wood.png"
+dest_files=[ "res://.import/wood.png-5b775182c0425b537510232752a7e4ed.stex" ]
 
 [params]
 
@@ -30,5 +30,5 @@ process/HDR_as_SRGB=false
 process/invert_color=false
 stream=false
 size_limit=0
-detect_3d=true
+detect_3d=false
 svg/scale=1.0
