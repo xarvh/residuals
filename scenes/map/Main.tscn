@@ -39,7 +39,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Belt" type="ColorRect" parent="HUD"]
+[node name="Backpack" type="ColorRect" parent="HUD"]
 anchor_top = 0.5
 anchor_bottom = 0.5
 margin_left = 20.0
@@ -51,11 +51,18 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ToolSelection" type="ReferenceRect" parent="HUD/Belt"]
+[node name="ToolSelection" type="ReferenceRect" parent="HUD/Backpack"]
 margin_right = 40.0
 margin_bottom = 40.0
 border_color = Color( 0, 0, 0, 1 )
 editor_only = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Content" type="Control" parent="HUD/Backpack"]
+margin_right = 40.0
+margin_bottom = 40.0
 __meta__ = {
 "_edit_use_anchors_": false
 }

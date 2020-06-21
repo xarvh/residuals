@@ -9,6 +9,7 @@ const cellSize = 8
 
 enum Item {
     Wood
+    Pickaxe
 }
 
 

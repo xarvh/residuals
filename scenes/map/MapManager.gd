@@ -2,6 +2,7 @@ extends Control
 
 
 const Drop = preload('res://scenes/drop/Drop.tscn')
+const Storage = preload('res://src/Storage.gd')
 
 
 #
@@ -12,7 +13,7 @@ const inputQuit = 'ui_cancel'
 const inputNextTool = 'SelectNextTool'
 const inputPrevTool = 'SelectPrevTool'
 
-const toolSelectionSize = 10
+const backpackSize = 10
 
 
 #
@@ -24,14 +25,33 @@ onready var cellHighlight = tilemap.get_node('CellHighlight')
 onready var ySort = mapContainer.get_node('YSort')
 onready var player = ySort.get_node('Player')
 
-# TODO stuff that should probably be in some other module
 
-onready var toolSelection = get_node('HUD').get_node('Belt').get_node('ToolSelection')
-onready var selectedToolIndex = 0
+#
+# Backpack
+#
+onready var backpackNode = get_node('HUD').get_node('Backpack')
+onready var backpackSelectedIndex = 0
+onready var backpackStorage = Storage.new(backpackSize)
 
 
 func _ready():
     cellHighlight.visible = false
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
+
+    #
+    # Backpack stuff
+    #
+    var size = backpackNode.rect_size.x
+    var contentNode = backpackNode.get_node('Content')
+    for i in backpackSize:
+        var item = TextureRect.new()
+        #TODO item.texture = load('res://scenes/human/pickaxe.png')
+        item.expand = true
+        item.rect_size.x = size
+        item.rect_size.y = size
+        item.rect_position.y = i * size
+        contentNode.add_child(item)
 
 
 #
@@ -46,7 +66,36 @@ func _process(delta):
     if cellHighlight.visible:
         cellHighlight.rect_position = player.getTargetCell() * tilemap.cell_size
 
-    toolSelection.rect_position.y = toolSelection.rect_size.y * selectedToolIndex
+    #
+    # Backpack stuff
+    #
+    var selectionNode = backpackNode.get_node('ToolSelection')
+    selectionNode.rect_position.y = selectionNode.rect_size.y * backpackSelectedIndex
+
+    var itemNodes = backpackNode.get_node('Content').get_children()
+    for i in backpackSize:
+        var itemNode = itemNodes[i]
+        var texture = itemToTexture(backpackStorage.items[i])
+        # let's check just in case the assignment does some magic
+        if itemNode.texture != texture:
+            itemNode.texture = texture
+
+
+
+#
+# TODO move this somewhere else
+#
+func itemToTexture(item):
+    match item:
+        null:
+            return null
+
+        Env.Item.Pickaxe:
+            return load('res://scenes/human/pickaxe.png')
+
+        Env.Item.Wood:
+            return load('res://scenes/drop/wood.png')
+
 
 
 #
@@ -55,10 +104,10 @@ func _process(delta):
 func _unhandled_input(event):
     if event.is_pressed():
         if InputMap.event_is_action(event, inputNextTool):
-            selectedToolIndex = (selectedToolIndex + 1) % toolSelectionSize
+            backpackSelectedIndex = (backpackSelectedIndex + 1) % backpackSize
 
         if InputMap.event_is_action(event, inputPrevTool):
-            selectedToolIndex = ((selectedToolIndex + toolSelectionSize - 1) % toolSelectionSize)
+            backpackSelectedIndex = ((backpackSelectedIndex + backpackSize - 1) % backpackSize)
 
 
 #
