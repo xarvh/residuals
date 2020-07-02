@@ -83,6 +83,9 @@ func itemToTexture(item):
         null:
             return null
 
+        Env.Item.Axe:
+            return load('res://scenes/human/axe.png')
+
         Env.Item.Pickaxe:
             return load('res://scenes/human/pickaxe.png')
 

@@ -67,7 +67,7 @@ func _process(dt):
 
 func onHitByTool(item, player):
 
-    if item != Env.Item.Pickaxe:
+    if item != Env.Item.Axe:
         # TODO make a thud sound
         return
 
