@@ -33,9 +33,9 @@ onready var backpackSelectedIndex = 0
 onready var backpackStorage = Storage.new(backpackSize)
 
 func _ready():
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Hoe)
     backpackStorage.insertInFirstEmptySlot(Env.Item.Axe)
     backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Hoe)
     backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
 
 
@@ -51,7 +51,7 @@ func _process(delta):
             if Input.is_action_pressed(inputUseTool):
                 # TODO check that the held item can be swung
                 toolTargetCell = getTargetCell()
-                var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tilemap.cell_size
+                var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tileMap.cell_size
                 var r = targetPos - self.position
                 if r.x > 0: self.scale.x = 1
                 if r.x < 0: self.scale.x = -1
@@ -73,7 +73,7 @@ func _process(delta):
     #
     # Selected item
     #
-    animationPlayer.setHeldItem(viewportManager.itemToTexture(getSelectedBackpackItem()))
+    animationPlayer.setHeldItem(Env.itemToTexture(getSelectedBackpackItem()))
 
 
 
@@ -96,9 +96,14 @@ func _unhandled_input(event):
 #
 func playerToolSwingHit():
     var targets = viewportManager.findAtCell(toolTargetCell)
+    var targetHit = false
     for t in targets:
         if t.has_method('onHitByTool'):
             t.onHitByTool(getSelectedBackpackItem(), self)
+            targetHit = true
+
+    if not targetHit:
+        viewportManager.hoeHitsGround(toolTargetCell)
 
 
 func getTargetCell():

@@ -14,8 +14,8 @@ const inputQuit = 'ui_cancel'
 # Init
 #
 onready var mapContainer = get_node('Map')
-onready var tilemap = mapContainer.get_node('TileMap')
-onready var cellHighlight = tilemap.get_node('CellHighlight')
+onready var tileMap = mapContainer.get_node('TileMap')
+onready var cellHighlight = tileMap.get_node('CellHighlight')
 onready var ySort = mapContainer.get_node('YSort')
 onready var player = ySort.get_node('Player')
 
@@ -53,7 +53,7 @@ func _process(delta):
 
     cellHighlight.visible = player.animationPlayer.current_animation == 'Idle'
     if cellHighlight.visible:
-        cellHighlight.rect_position = player.getTargetCell() * tilemap.cell_size
+        cellHighlight.rect_position = player.getTargetCell() * tileMap.cell_size
 
     #
     # Backpack stuff
@@ -64,36 +64,10 @@ func _process(delta):
     var itemNodes = backpackNode.get_node('Content').get_children()
     for i in player.backpackSize:
         var itemNode = itemNodes[i]
-        var texture = itemToTexture(player.backpackStorage.items[i])
+        var texture = Env.itemToTexture(player.backpackStorage.items[i])
         # let's check just in case the assignment does some magic
         if itemNode.texture != texture:
             itemNode.texture = texture
-
-
-#
-# TODO move this somewhere else
-#
-# TODO Ideally, the info should also contain offset and material, so maybe load a Scene instead?
-# It's actually one Scene for the backpack selector and one Scene for the player sprite?
-#
-# TODO Also add info on how the item is held
-#
-func itemToTexture(item):
-    match item:
-        null:
-            return null
-
-        Env.Item.Axe:
-            return load('res://scenes/human/axe.png')
-
-        Env.Item.Pickaxe:
-            return load('res://scenes/human/pickaxe.png')
-
-        Env.Item.Hoe:
-            return load('res://scenes/human/hoe.png')
-
-        Env.Item.Wood:
-            return load('res://scenes/drop/wood.png')
 
 
 #
@@ -107,18 +81,18 @@ func _unhandled_input(event):
 #
 #
 func positionToCell(position):
-    return (position / tilemap.cell_size).floor()
+    return (position / tileMap.cell_size).floor()
 
 
 func getMouseCell():
-    return tilemap.world_to_map(tilemap.get_local_mouse_position())
+    return tileMap.world_to_map(tileMap.get_local_mouse_position())
 
 
 func findAtCell(cell):
-    var minx = cell.x * tilemap.cell_size.x
-    var maxx = minx + tilemap.cell_size.x - 1
-    var miny = cell.y * tilemap.cell_size.y
-    var maxy = miny + tilemap.cell_size.y - 1
+    var minx = cell.x * tileMap.cell_size.x
+    var maxx = minx + tileMap.cell_size.x - 1
+    var miny = cell.y * tileMap.cell_size.y
+    var maxy = miny + tileMap.cell_size.y - 1
 
     var r = []
     for n in ySort.get_children():
@@ -126,6 +100,10 @@ func findAtCell(cell):
             r.append(n)
 
     return r
+
+
+func getCellTileName(position):
+    return tileMap.tile_set.tile_get_name(tileMap.get_cellv(position))
 
 
 #
@@ -136,3 +114,13 @@ func spawnDrop(position, type):
     drop.position = position
     drop.type = type
     ySort.add_child(drop)
+
+
+#
+#
+#
+func hoeHitsGround(position):
+    match getCellTileName(position):
+        'Base':
+            tileMap.set_cellv(position, tileMap.tile_set.find_tile_by_name('Tilled'))
+            tileMap.update_bitmask_area(position)
