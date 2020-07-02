@@ -1,3 +1,23 @@
 
+MVP features:
+  - Grow plants
+      - Till terrain
+      - Put seeds in tilled terrain
+      x no water needed for now
+      - Plant grows
+
+  - Craft
+
+  - Talk to people
+
+
+
+  - Move from one tilemap to another
+
+
+
+
+
+
 - Some dirt tiles in the autotileset have inconsistent dirt seam offset
 

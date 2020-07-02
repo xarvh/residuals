@@ -5,8 +5,8 @@
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=4]
 [ext_resource path="res://scenes/drop/Drop.tscn" type="PackedScene" id=5]
 [ext_resource path="res://scenes/human/collect.wav" type="AudioStream" id=7]
-[ext_resource path="res://scenes/human/HumanPlayer.gd" type="Script" id=10]
-[ext_resource path="res://scenes/map/MapManager.gd" type="Script" id=11]
+[ext_resource path="res://src/HumanPlayer.gd" type="Script" id=10]
+[ext_resource path="res://src/MapManager.gd" type="Script" id=11]
 [ext_resource path="res://scenes/human/HumanCharacter.tscn" type="PackedScene" id=12]
 
 [sub_resource type="ShaderMaterial" id=1]

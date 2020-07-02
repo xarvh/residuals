@@ -1,8 +1,9 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=1]
-[ext_resource path="res://scenes/drop/Drop.gd" type="Script" id=2]
+[ext_resource path="res://src/Drop.gd" type="Script" id=2]
 [ext_resource path="res://scenes/drop/wood.png" type="Texture" id=3]
+
 
 
 [sub_resource type="ShaderMaterial" id=1]

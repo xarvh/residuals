@@ -7,7 +7,8 @@
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=5]
 [ext_resource path="res://scenes/human/humanShadow.png" type="Texture" id=6]
 [ext_resource path="res://scenes/human/footstep.wav" type="AudioStream" id=7]
-[ext_resource path="res://scenes/human/HumanCharacter.gd" type="Script" id=8]
+[ext_resource path="res://src/HumanCharacter.gd" type="Script" id=8]
+
 
 [sub_resource type="Animation" id=1]
 loop = true

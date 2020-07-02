@@ -89,6 +89,9 @@ func itemToTexture(item):
         Env.Item.Pickaxe:
             return load('res://scenes/human/pickaxe.png')
 
+        Env.Item.Hoe:
+            return load('res://scenes/human/hoe.png')
+
         Env.Item.Wood:
             return load('res://scenes/drop/wood.png')
 

@@ -35,6 +35,7 @@ onready var backpackStorage = Storage.new(backpackSize)
 func _ready():
     backpackStorage.insertInFirstEmptySlot(Env.Item.Axe)
     backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Hoe)
     backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
 
 
