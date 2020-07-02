@@ -9,14 +9,7 @@
 [ext_resource path="res://scenes/human/footstep.wav" type="AudioStream" id=7]
 [ext_resource path="res://scenes/human/HumanCharacter.gd" type="Script" id=8]
 
-
-
-
-
-
-
-
-[sub_resource type="Animation" id=2]
+[sub_resource type="Animation" id=1]
 loop = true
 tracks/0/type = "value"
 tracks/0/path = NodePath("Legs:frame")
@@ -43,7 +36,7 @@ tracks/1/keys = {
 "values": [ 0.0 ]
 }
 
-[sub_resource type="Animation" id=3]
+[sub_resource type="Animation" id=2]
 loop = true
 tracks/0/type = "value"
 tracks/0/path = NodePath("Legs/Torso+Head/Arm:rotation_degrees")
@@ -58,7 +51,7 @@ tracks/0/keys = {
 "values": [ -156.8 ]
 }
 
-[sub_resource type="Animation" id=4]
+[sub_resource type="Animation" id=3]
 length = 3.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("Legs/Torso+Head/Arm:rotation_degrees")
@@ -123,13 +116,13 @@ tracks/4/keys = {
 } ]
 }
 
+[sub_resource type="AudioStreamRandomPitch" id=4]
+audio_stream = ExtResource( 7 )
+
 [sub_resource type="AudioStreamRandomPitch" id=5]
 audio_stream = ExtResource( 7 )
 
-[sub_resource type="AudioStreamRandomPitch" id=6]
-audio_stream = ExtResource( 7 )
-
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=6]
 length = 6.0
 loop = true
 tracks/0/type = "value"
@@ -166,16 +159,16 @@ tracks/2/keys = {
 "clips": [ {
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource( 5 )
+"stream": SubResource( 4 )
 }, {
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource( 6 )
+"stream": SubResource( 5 )
 } ],
 "times": PoolRealArray( 0, 3 )
 }
 
-[sub_resource type="ShaderMaterial" id=8]
+[sub_resource type="ShaderMaterial" id=7]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.909804, 0.52549, 0.0745098, 1 )
@@ -184,7 +177,7 @@ shader_param/g1 = Color( 0.0392157, 0.721569, 0.737255, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.85098, 0, 1, 1 )
 
-[sub_resource type="ShaderMaterial" id=9]
+[sub_resource type="ShaderMaterial" id=8]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.941176, 0.6, 0.00784314, 1 )
@@ -193,7 +186,7 @@ shader_param/g1 = Color( 0, 0.0509804, 0.176471, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.513726, 0.207843, 0.0235294, 1 )
 
-[sub_resource type="ShaderMaterial" id=10]
+[sub_resource type="ShaderMaterial" id=9]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.298039, 0.129412, 0, 1 )
@@ -202,7 +195,7 @@ shader_param/g1 = Color( 0.568627, 0.568627, 0.568627, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0, 0, 1, 1 )
 
-[sub_resource type="ShaderMaterial" id=11]
+[sub_resource type="ShaderMaterial" id=10]
 shader = ExtResource( 5 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0, 0, 0, 0.25098 )
@@ -217,44 +210,44 @@ scale = Vector2( 10, 10 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 playback_speed = 6.0
-anims/Idle = SubResource( 2 )
-anims/RaiseTool = SubResource( 3 )
-anims/SwingTool = SubResource( 4 )
-anims/Walk = SubResource( 7 )
+anims/Idle = SubResource( 1 )
+anims/RaiseTool = SubResource( 2 )
+anims/SwingTool = SubResource( 3 )
+anims/Walk = SubResource( 6 )
 script = ExtResource( 8 )
 
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="."]
-stream = SubResource( 5 )
+stream = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
-material = SubResource( 8 )
+material = SubResource( 7 )
 position = Vector2( 0, -7 )
 texture = ExtResource( 1 )
 hframes = 6
 frame = 1
 
 [node name="Torso+Head" type="Sprite" parent="Legs"]
-material = SubResource( 9 )
+material = SubResource( 8 )
 position = Vector2( -0.0658932, 2.66441 )
 texture = ExtResource( 2 )
 offset = Vector2( 0.0658932, -1.66441 )
 
 [node name="Arm" type="Sprite" parent="Legs/Torso+Head"]
-material = SubResource( 8 )
+material = SubResource( 7 )
 position = Vector2( 0.0518665, -2.2413 )
 rotation = -0.346533
 texture = ExtResource( 3 )
 offset = Vector2( -0.495468, 0.845141 )
 
-[node name="Pickaxe" type="Sprite" parent="Legs/Torso+Head/Arm"]
-material = SubResource( 10 )
+[node name="HeldItem" type="Sprite" parent="Legs/Torso+Head/Arm"]
+material = SubResource( 9 )
 position = Vector2( -26.1241, -2.60694 )
 rotation = 1.5708
 texture = ExtResource( 4 )
 offset = Vector2( 5.39905, -30.5824 )
 
 [node name="humanShadow" type="Sprite" parent="."]
-material = SubResource( 11 )
+material = SubResource( 10 )
 position = Vector2( -0.200247, -0.0411348 )
 z_index = -1
 texture = ExtResource( 6 )

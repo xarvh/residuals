@@ -1,6 +1,9 @@
 extends Node2D
 
 
+const Storage = preload('res://src/Storage.gd')
+
+
 #
 # Config
 #
@@ -10,16 +13,28 @@ const inputLeft = "ui_left"
 const inputRight = "ui_right"
 const inputUseTool = "ui_accept"
 
+const inputNextTool = 'SelectNextTool'
+const inputPrevTool = 'SelectPrevTool'
+
 const walkingSpeed = 10
+
+const backpackSize = 10
 
 
 #
-# Properties
+# Init
 #
 onready var animationPlayer = get_node("AnimationPlayer")
 onready var viewportManager = Meta.getAncestor(self, 'ViewportManager')
 
 onready var toolTargetCell = null
+
+onready var backpackSelectedIndex = 0
+onready var backpackStorage = Storage.new(backpackSize)
+
+func _ready():
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
+    backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
 
 
 #
@@ -32,6 +47,7 @@ func _process(delta):
     match self.animationPlayer.current_animation:
         "Idle":
             if Input.is_action_pressed(inputUseTool):
+                # TODO check that the held item can be swung
                 toolTargetCell = getTargetCell()
                 var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tilemap.cell_size
                 var r = targetPos - self.position
@@ -52,25 +68,35 @@ func _process(delta):
           self.animationPlayer.play("Idle")
 
 
+    #
+    # Selected item
+    #
+    animationPlayer.setHeldItem(viewportManager.itemToTexture(getSelectedBackpackItem()))
+
+
+
 #
 # Input interrupts
 #
 func _unhandled_input(event):
-    match self.animationPlayer.current_animation:
-        "Idle":
-            if event.is_pressed() and InputMap.event_is_action(event, inputUseTool):
-                pass
+    if event.is_pressed():
+        match self.animationPlayer.current_animation:
+            "Idle", "Walk":
+                if InputMap.event_is_action(event, inputNextTool):
+                    backpackSelectedIndex = (backpackSelectedIndex + 1) % backpackSize
+
+                if InputMap.event_is_action(event, inputPrevTool):
+                    backpackSelectedIndex = ((backpackSelectedIndex + backpackSize - 1) % backpackSize)
 
 
 #
 # Hooks
 #
 func playerToolSwingHit():
-    var axePower = 10
     var targets = viewportManager.findAtCell(toolTargetCell)
     for t in targets:
         if t.has_method('onHitByTool'):
-            t.onHitByTool('axe', axePower, self)
+            t.onHitByTool(getSelectedBackpackItem(), self)
 
 
 func getTargetCell():
@@ -83,12 +109,15 @@ func collectItem(type):
     var collect = get_node('Collect')
     if not collect.playing or collect.get_playback_position() > 0.05:
         collect.play()
-    print('collected: ', type)
 
 
 #
 # State helpers
 #
+func getSelectedBackpackItem():
+    return backpackStorage.items[backpackSelectedIndex]
+
+
 func _walk_or_idle(dx, dy, delta):
     if dx or dy:
         var n = sqrt(dx * dx + dy * dy)

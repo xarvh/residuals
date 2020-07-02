@@ -39,6 +39,7 @@ func _process(dt):
 
 
 func _on_Area2D_area_entered(body):
+    # TODO what if the player backpack is full?
     player = Meta.getAncestor(body, 'Player')
 
 

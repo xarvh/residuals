@@ -65,11 +65,14 @@ func _process(dt):
             trunk = null
 
 
-func onHitByTool(toolName, toolPower, player):
-    # TODO if toolName == 'Axe'
+func onHitByTool(item, player):
+
+    if item != Env.Item.Pickaxe:
+        # TODO make a thud sound
+        return
 
     axeOnWood.play()
-    damage += toolPower
+    damage += 10
 
     match state:
         State.TrunkUp:

@@ -2,18 +2,12 @@ extends Control
 
 
 const Drop = preload('res://scenes/drop/Drop.tscn')
-const Storage = preload('res://src/Storage.gd')
 
 
 #
 # Config
 #
 const inputQuit = 'ui_cancel'
-
-const inputNextTool = 'SelectNextTool'
-const inputPrevTool = 'SelectPrevTool'
-
-const backpackSize = 10
 
 
 #
@@ -29,24 +23,19 @@ onready var player = ySort.get_node('Player')
 #
 # Backpack
 #
-onready var backpackNode = get_node('HUD').get_node('Backpack')
-onready var backpackSelectedIndex = 0
-onready var backpackStorage = Storage.new(backpackSize)
+onready var backpackNode = get_node('HUD/Backpack')
 
 
 func _ready():
     cellHighlight.visible = false
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
 
     #
     # Backpack stuff
     #
     var size = backpackNode.rect_size.x
     var contentNode = backpackNode.get_node('Content')
-    for i in backpackSize:
+    for i in player.backpackSize:
         var item = TextureRect.new()
-        #TODO item.texture = load('res://scenes/human/pickaxe.png')
         item.expand = true
         item.rect_size.x = size
         item.rect_size.y = size
@@ -70,20 +59,24 @@ func _process(delta):
     # Backpack stuff
     #
     var selectionNode = backpackNode.get_node('ToolSelection')
-    selectionNode.rect_position.y = selectionNode.rect_size.y * backpackSelectedIndex
+    selectionNode.rect_position.y = selectionNode.rect_size.y * player.backpackSelectedIndex
 
     var itemNodes = backpackNode.get_node('Content').get_children()
-    for i in backpackSize:
+    for i in player.backpackSize:
         var itemNode = itemNodes[i]
-        var texture = itemToTexture(backpackStorage.items[i])
+        var texture = itemToTexture(player.backpackStorage.items[i])
         # let's check just in case the assignment does some magic
         if itemNode.texture != texture:
             itemNode.texture = texture
 
 
-
 #
 # TODO move this somewhere else
+#
+# TODO Ideally, the info should also contain offset and material, so maybe load a Scene instead?
+# It's actually one Scene for the backpack selector and one Scene for the player sprite?
+#
+# TODO Also add info on how the item is held
 #
 func itemToTexture(item):
     match item:
@@ -97,17 +90,11 @@ func itemToTexture(item):
             return load('res://scenes/drop/wood.png')
 
 
-
 #
 # Input interrupts
 #
 func _unhandled_input(event):
-    if event.is_pressed():
-        if InputMap.event_is_action(event, inputNextTool):
-            backpackSelectedIndex = (backpackSelectedIndex + 1) % backpackSize
-
-        if InputMap.event_is_action(event, inputPrevTool):
-            backpackSelectedIndex = ((backpackSelectedIndex + backpackSize - 1) % backpackSize)
+    pass
 
 
 #
@@ -130,7 +117,7 @@ func findAtCell(cell):
     var r = []
     for n in ySort.get_children():
         if minx <= n.position.x and n.position.x <= maxx and miny <= n.position.y and n.position.y <= maxy:
-              r.append(n)
+            r.append(n)
 
     return r
 
