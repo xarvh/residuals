@@ -1,6 +1,7 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://scenes/tree/Tree.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/map/hoeOnGround.wav" type="AudioStream" id=2]
 [ext_resource path="res://scenes/map/tileset.tres" type="TileSet" id=3]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=4]
 [ext_resource path="res://scenes/drop/Drop.tscn" type="PackedScene" id=5]
@@ -9,7 +10,10 @@
 [ext_resource path="res://src/MapManager.gd" type="Script" id=11]
 [ext_resource path="res://scenes/human/HumanCharacter.tscn" type="PackedScene" id=12]
 
-[sub_resource type="ShaderMaterial" id=1]
+[sub_resource type="AudioStreamRandomPitch" id=1]
+audio_stream = ExtResource( 2 )
+
+[sub_resource type="ShaderMaterial" id=2]
 shader = ExtResource( 4 )
 shader_param/r0 = Color( 0, 0, 0, 1 )
 shader_param/r1 = Color( 0.921569, 0.584314, 0, 1 )
@@ -18,11 +22,11 @@ shader_param/g1 = Color( 0.901961, 0.505882, 0, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.47451, 0.298039, 0, 1 )
 
-[sub_resource type="AudioStreamRandomPitch" id=2]
+[sub_resource type="AudioStreamRandomPitch" id=3]
 audio_stream = ExtResource( 7 )
 random_pitch = 3.0
 
-[sub_resource type="CircleShape2D" id=3]
+[sub_resource type="CircleShape2D" id=4]
 
 [node name="ViewportManager" type="Control"]
 anchor_right = 1.0
@@ -70,8 +74,11 @@ __meta__ = {
 [node name="Map" type="Node2D" parent="."]
 scale = Vector2( 10, 10 )
 
+[node name="HoeOnGround" type="AudioStreamPlayer" parent="Map"]
+stream = SubResource( 1 )
+
 [node name="TileMap" type="TileMap" parent="Map"]
-material = SubResource( 1 )
+material = SubResource( 2 )
 z_index = -1
 tile_set = ExtResource( 3 )
 cell_size = Vector2( 8, 8 )
@@ -97,7 +104,7 @@ scale = Vector2( 1, 1 )
 script = ExtResource( 10 )
 
 [node name="Collect" type="AudioStreamPlayer2D" parent="Map/YSort/Player"]
-stream = SubResource( 2 )
+stream = SubResource( 3 )
 
 [node name="DropPickupArea" type="Area2D" parent="Map/YSort/Player"]
 visible = false
@@ -105,7 +112,7 @@ collision_layer = 2
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Map/YSort/Player/DropPickupArea"]
-shape = SubResource( 3 )
+shape = SubResource( 4 )
 
 [node name="Tree" parent="Map/YSort" instance=ExtResource( 1 )]
 

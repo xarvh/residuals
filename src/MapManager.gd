@@ -124,3 +124,4 @@ func hoeHitsGround(position):
         'Base':
             tileMap.set_cellv(position, tileMap.tile_set.find_tile_by_name('Tilled'))
             tileMap.update_bitmask_area(position)
+            mapContainer.get_node('HoeOnGround').play()
