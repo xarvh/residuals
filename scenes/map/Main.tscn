@@ -1,10 +1,11 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://scenes/tree/Tree.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/map/hoeOnGround.wav" type="AudioStream" id=2]
 [ext_resource path="res://scenes/map/tileset.tres" type="TileSet" id=3]
 [ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=4]
 [ext_resource path="res://scenes/drop/Drop.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/plants/cauliflower.png" type="Texture" id=6]
 [ext_resource path="res://scenes/human/collect.wav" type="AudioStream" id=7]
 [ext_resource path="res://src/HumanPlayer.gd" type="Script" id=10]
 [ext_resource path="res://src/MapManager.gd" type="Script" id=11]
@@ -22,11 +23,20 @@ shader_param/g1 = Color( 0.901961, 0.505882, 0, 1 )
 shader_param/b0 = Color( 0, 0, 0, 1 )
 shader_param/b1 = Color( 0.47451, 0.298039, 0, 1 )
 
-[sub_resource type="AudioStreamRandomPitch" id=3]
+[sub_resource type="ShaderMaterial" id=3]
+shader = ExtResource( 4 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
+shader_param/r1 = Color( 0.960938, 0.941625, 0.653137, 1 )
+shader_param/g0 = Color( 0, 0.294118, 0, 1 )
+shader_param/g1 = Color( 0, 0.654902, 0, 1 )
+shader_param/b0 = Color( 0.403922, 0.294118, 0, 1 )
+shader_param/b1 = Color( 0.87451, 0.494118, 0, 1 )
+
+[sub_resource type="AudioStreamRandomPitch" id=4]
 audio_stream = ExtResource( 7 )
 random_pitch = 3.0
 
-[sub_resource type="CircleShape2D" id=4]
+[sub_resource type="CircleShape2D" id=5]
 
 [node name="ViewportManager" type="Control"]
 anchor_right = 1.0
@@ -98,13 +108,22 @@ __meta__ = {
 
 [node name="YSort" type="YSort" parent="Map"]
 
+[node name="Cauliflower" type="Sprite" parent="Map/YSort"]
+material = SubResource( 3 )
+position = Vector2( 24, 48 )
+scale = Vector2( 1, 1 )
+z_index = -1
+texture = ExtResource( 6 )
+offset = Vector2( 4, 4 )
+hframes = 6
+
 [node name="Player" parent="Map/YSort" instance=ExtResource( 12 )]
 position = Vector2( 37.7074, 53.1583 )
 scale = Vector2( 1, 1 )
 script = ExtResource( 10 )
 
 [node name="Collect" type="AudioStreamPlayer2D" parent="Map/YSort/Player"]
-stream = SubResource( 3 )
+stream = SubResource( 4 )
 
 [node name="DropPickupArea" type="Area2D" parent="Map/YSort/Player"]
 visible = false
@@ -112,7 +131,7 @@ collision_layer = 2
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Map/YSort/Player/DropPickupArea"]
-shape = SubResource( 4 )
+shape = SubResource( 5 )
 
 [node name="Tree" parent="Map/YSort" instance=ExtResource( 1 )]
 
