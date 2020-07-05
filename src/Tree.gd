@@ -60,14 +60,14 @@ func _process(dt):
             for i in Env.rng.randi_range(12, 16):
                 var pos = self.position
                 pos.x += Env.rng.randf_range(0.5, 4) * Env.cellSize
-                Meta.callAncestorMethod(self, "spawnDrop", [ pos, Env.Item.Wood ])
+                Meta.callAncestorMethod(self, "spawnDrop", [ pos, Env.ItemId.Wood ])
             trunk.queue_free()
             trunk = null
 
 
-func onHitByTool(item, player):
+func onHitByTool(itemId, player):
 
-    if item != Env.Item.Axe:
+    if itemId != Env.ItemId.Axe:
         # TODO make a thud sound
         return
 
@@ -89,7 +89,7 @@ func onHitByTool(item, player):
                 timeLeftToShake = stumpShakeDuration
             else:
                 for i in Env.rng.randi_range(4, 9):
-                    Meta.callAncestorMethod(self, "spawnDrop", [ self.position, Env.Item.Wood ])
+                    Meta.callAncestorMethod(self, "spawnDrop", [ self.position, Env.ItemId.Wood ])
                 self.queue_free()
                 # TODO make breaking sound
 

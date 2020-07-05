@@ -221,7 +221,7 @@ stream = SubResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]
 material = SubResource( 7 )
-position = Vector2( 0, -7 )
+position = Vector2( 0, -6 )
 texture = ExtResource( 1 )
 hframes = 6
 frame = 1

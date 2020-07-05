@@ -90,7 +90,7 @@ stream = SubResource( 1 )
 
 [node name="TileMap" type="TileMap" parent="Map"]
 material = SubResource( 2 )
-z_index = -1
+z_index = -2
 tile_set = ExtResource( 3 )
 cell_size = Vector2( 8, 8 )
 format = 1
@@ -112,6 +112,7 @@ __meta__ = {
 [node name="Cauliflower" type="Sprite" parent="Map/YSort"]
 material = SubResource( 3 )
 position = Vector2( 28.0203, 54.7196 )
+z_index = -2
 texture = ExtResource( 6 )
 offset = Vector2( -0.0202675, -2.71964 )
 hframes = 6

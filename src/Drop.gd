@@ -14,7 +14,7 @@ const vacuumSpeed = 30
 # Init
 #
 onready var player = null
-onready var type = Env.Item.Wood
+onready var type = Env.ItemId.Wood
 onready var velocity = Vector2(rndSpeed(), rndSpeed())
 
 

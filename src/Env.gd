@@ -7,7 +7,7 @@ extends Node2D
 const cellSize = 8
 
 
-enum Item {
+enum ItemId {
     Axe
     Pickaxe
     Hoe
@@ -15,30 +15,40 @@ enum Item {
 }
 
 
-#
-# TODO move this somewhere else
-#
-# TODO Ideally, the info should also contain offset and material, so maybe load a Scene instead?
-# It's actually one Scene for the backpack selector and one Scene for the player sprite?
-#
-# TODO Also add info on how the item is held
-#
-func itemToTexture(item):
-    match item:
-        null:
-            return null
+onready var itemsById = _makeItemsById([{
+    id = null,
+    path = null,
+    canSwing = false,
+}, {
+    id = ItemId.Axe,
+    path = 'res://scenes/human/axe.png',
+    canSwing = true,
+}, {
+    id = ItemId.Pickaxe,
+    path = 'res://scenes/human/pickaxe.png',
+    canSwing = true,
+}, {
+    id = ItemId.Hoe,
+    path = 'res://scenes/human/hoe.png',
+    canSwing = true,
+}, {
+    id = ItemId.Wood,
+    path = 'res://scenes/drop/wood.png',
+    canSwing = false,
+}])
 
-        Env.Item.Axe:
-            return load('res://scenes/human/axe.png')
 
-        Env.Item.Pickaxe:
-            return load('res://scenes/human/pickaxe.png')
+func _makeItemsById(items):
+    var dict = {}
 
-        Env.Item.Hoe:
-            return load('res://scenes/human/hoe.png')
+    for item in items:
+        dict[item.id] = item
 
-        Env.Item.Wood:
-            return load('res://scenes/drop/wood.png')
+        # TODO Ideally, the info should also contain offset and material, so maybe load a Scene instead?
+        # It's actually one Scene for the backpack selector and one Scene for the player sprite?
+        item.texture = load(item.path) if item.path else null
+
+    return dict
 
 
 #

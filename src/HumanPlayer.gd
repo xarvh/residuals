@@ -33,10 +33,10 @@ onready var backpackSelectedIndex = 0
 onready var backpackStorage = Storage.new(backpackSize)
 
 func _ready():
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Hoe)
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Axe)
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Pickaxe)
-    backpackStorage.insertInFirstEmptySlot(Env.Item.Wood)
+    backpackStorage.insertInFirstEmptySlot(Env.ItemId.Hoe)
+    backpackStorage.insertInFirstEmptySlot(Env.ItemId.Axe)
+    backpackStorage.insertInFirstEmptySlot(Env.ItemId.Pickaxe)
+    backpackStorage.insertInFirstEmptySlot(Env.ItemId.Wood)
 
 
 #
@@ -48,8 +48,7 @@ func _process(delta):
 
     match self.animationPlayer.current_animation:
         "Idle":
-            if Input.is_action_pressed(inputUseTool):
-                # TODO check that the held item can be swung
+            if Input.is_action_pressed(inputUseTool) and getSelectedBackpackItem().canSwing:
                 toolTargetCell = getTargetCell()
                 var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tileMap.cell_size
                 var r = targetPos - self.position
@@ -73,7 +72,7 @@ func _process(delta):
     #
     # Selected item
     #
-    animationPlayer.setHeldItem(Env.itemToTexture(getSelectedBackpackItem()))
+    animationPlayer.setHeldItem(getSelectedBackpackItemId())
 
 
 
@@ -95,14 +94,15 @@ func _unhandled_input(event):
 # Hooks
 #
 func playerToolSwingHit():
+    var itemId = getSelectedBackpackItemId()
     var targets = viewportManager.findAtCell(toolTargetCell)
     var targetHit = false
     for t in targets:
         if t.has_method('onHitByTool'):
-            t.onHitByTool(getSelectedBackpackItem(), self)
+            t.onHitByTool(itemId, self)
             targetHit = true
 
-    if not targetHit:
+    if not targetHit and itemId == Env.ItemId.Hoe:
         viewportManager.hoeHitsGround(toolTargetCell)
 
 
@@ -121,8 +121,12 @@ func collectItem(type):
 #
 # State helpers
 #
-func getSelectedBackpackItem():
+func getSelectedBackpackItemId():
     return backpackStorage.items[backpackSelectedIndex]
+
+
+func getSelectedBackpackItem():
+    return Env.itemsById[getSelectedBackpackItemId()]
 
 
 func _walk_or_idle(dx, dy, delta):

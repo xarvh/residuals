@@ -64,7 +64,8 @@ func _process(delta):
     var itemNodes = backpackNode.get_node('Content').get_children()
     for i in player.backpackSize:
         var itemNode = itemNodes[i]
-        var texture = Env.itemToTexture(player.backpackStorage.items[i])
+        var item = Env.itemsById[player.backpackStorage.items[i]]
+        var texture = item.texture if item else null
         # let's check just in case the assignment does some magic
         if itemNode.texture != texture:
             itemNode.texture = texture

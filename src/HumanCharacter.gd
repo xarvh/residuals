@@ -8,5 +8,5 @@ func _onSwingHit():
     Meta.callAncestorMethod(self, 'playerToolSwingHit')
 
 
-func setHeldItem(texture):
-    toolNode.texture = texture
+func setHeldItem(itemId):
+    toolNode.texture = Env.itemsById[itemId].texture
