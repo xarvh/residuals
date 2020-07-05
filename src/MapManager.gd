@@ -74,7 +74,9 @@ func _process(delta):
 # Input interrupts
 #
 func _unhandled_input(event):
-    pass
+    if event.is_pressed():
+        if InputMap.event_is_action(event, 'ui_end'):
+            var x = Meta.callOnDescendants(self, 'oneDayPasses')
 
 
 #

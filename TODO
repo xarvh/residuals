@@ -1,10 +1,12 @@
 
 MVP features:
   - Grow plants
-      - Till terrain
+      v Till terrain
       - Put seeds in tilled terrain
       x no water needed for now
-      - Plant grows
+      v Plant grows
+      - Plant moves when player passes over
+      - Player can collect mature plant
 
   - Craft
 

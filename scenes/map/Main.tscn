@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://scenes/tree/Tree.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/map/hoeOnGround.wav" type="AudioStream" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://scenes/drop/Drop.tscn" type="PackedScene" id=5]
 [ext_resource path="res://scenes/plants/cauliflower.png" type="Texture" id=6]
 [ext_resource path="res://scenes/human/collect.wav" type="AudioStream" id=7]
+[ext_resource path="res://src/Plant.gd" type="Script" id=8]
 [ext_resource path="res://src/HumanPlayer.gd" type="Script" id=10]
 [ext_resource path="res://src/MapManager.gd" type="Script" id=11]
 [ext_resource path="res://scenes/human/HumanCharacter.tscn" type="PackedScene" id=12]
@@ -110,12 +111,11 @@ __meta__ = {
 
 [node name="Cauliflower" type="Sprite" parent="Map/YSort"]
 material = SubResource( 3 )
-position = Vector2( 24, 48 )
-scale = Vector2( 1, 1 )
-z_index = -1
+position = Vector2( 28.0203, 54.7196 )
 texture = ExtResource( 6 )
-offset = Vector2( 4, 4 )
+offset = Vector2( -0.0202675, -2.71964 )
 hframes = 6
+script = ExtResource( 8 )
 
 [node name="Player" parent="Map/YSort" instance=ExtResource( 12 )]
 position = Vector2( 37.7074, 53.1583 )

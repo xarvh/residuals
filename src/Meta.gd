@@ -27,3 +27,17 @@ static func callAncestorMethod(child, methodName, args = []):
         return parent.callv(methodName, args)
     else:
         return callAncestorMethod(parent, methodName, args)
+
+
+static func callOnDescendants(node, methodName, args = []):
+    var n = 0
+
+    for child in node.get_children():
+
+        if child.has_method(methodName):
+            child.callv(methodName, args)
+            n += 1
+
+        n += callOnDescendants(child, methodName, args)
+
+    return n
