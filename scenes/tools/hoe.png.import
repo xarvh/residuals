@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/axe.png-7c54e04c532074caa274259cb2075463.stex"
+path="res://.import/hoe.png-6e410a1a50e4dab09cdb5b1d39f66ce2.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/human/axe.png"
-dest_files=[ "res://.import/axe.png-7c54e04c532074caa274259cb2075463.stex" ]
+source_file="res://scenes/tools/hoe.png"
+dest_files=[ "res://.import/hoe.png-6e410a1a50e4dab09cdb5b1d39f66ce2.stex" ]
 
 [params]
 

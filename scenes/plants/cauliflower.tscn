@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://shaders/ColorizeRGB.shader" type="Shader" id=1]
+[ext_resource path="res://src/Plant.gd" type="Script" id=2]
+[ext_resource path="res://scenes/plants/cauliflower.png" type="Texture" id=3]
+
+[sub_resource type="ShaderMaterial" id=1]
+shader = ExtResource( 1 )
+shader_param/r0 = Color( 0, 0, 0, 1 )
+shader_param/r1 = Color( 0.960938, 0.941625, 0.653137, 1 )
+shader_param/g0 = Color( 0, 0.294118, 0, 1 )
+shader_param/g1 = Color( 0, 0.654902, 0, 1 )
+shader_param/b0 = Color( 0.403922, 0.294118, 0, 1 )
+shader_param/b1 = Color( 0.87451, 0.494118, 0, 1 )
+
+[node name="Cauliflower" type="Sprite"]
+material = SubResource( 1 )
+z_index = -2
+texture = ExtResource( 3 )
+offset = Vector2( -0.0202675, -2.71964 )
+hframes = 6
+script = ExtResource( 2 )

@@ -1,6 +1,9 @@
 extends Sprite
 
 
+const CollisionArea = preload('res://scenes/drops/CollisionArea.tscn')
+
+
 #
 # Config
 #
@@ -11,11 +14,23 @@ const vacuumSpeed = 30
 
 
 #
+# Export
+#
+export(Env.ItemId) var type = Env.ItemId.Wood
+
+
+#
 # Init
 #
 onready var player = null
-onready var type = Env.ItemId.Wood
 onready var velocity = Vector2(rndSpeed(), rndSpeed())
+
+
+func _ready():
+    # TODO do this only when the Drop is on the ground?
+    var area = CollisionArea.instance()
+    add_child(area)
+    area.connect("area_entered", self, "_on_Area2D_area_entered")
 
 
 #

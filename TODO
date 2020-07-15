@@ -1,4 +1,11 @@
 
+- Scale map so that 1 cell = size 1?
+
+- change inputs so that player moves to target (this means adding obstacles and pathfinding?)
+
+- Add unremovable item 0: `interact` (hand symbol? speech balloon?)
+
+
 MVP features:
   - Grow plants
       v Till terrain

@@ -37,6 +37,7 @@ func _ready():
     backpackStorage.insertInFirstEmptySlot(Env.ItemId.Axe)
     backpackStorage.insertInFirstEmptySlot(Env.ItemId.Pickaxe)
     backpackStorage.insertInFirstEmptySlot(Env.ItemId.Wood)
+    backpackStorage.insertInFirstEmptySlot(Env.ItemId.CauliflowerSeeds)
 
 
 #
@@ -48,7 +49,7 @@ func _process(delta):
 
     match self.animationPlayer.current_animation:
         "Idle":
-            if Input.is_action_pressed(inputUseTool) and getSelectedBackpackItem().canSwing:
+            if Input.is_action_pressed(inputUseTool) and getSelectedBackpackItem().use == Env.ItemUse.Swing:
                 toolTargetCell = getTargetCell()
                 var targetPos = (toolTargetCell + Vector2(0.5, 0.5)) * viewportManager.tileMap.cell_size
                 var r = targetPos - self.position

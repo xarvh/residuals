@@ -8,33 +8,50 @@ const cellSize = 8
 
 
 enum ItemId {
+    Interact
     Axe
     Pickaxe
     Hoe
     Wood
+    CauliflowerSeeds
+}
+
+
+enum ItemUse {
+    Interact
+    Swing
+    Place
 }
 
 
 onready var itemsById = _makeItemsById([{
     id = null,
-    path = null,
-    canSwing = false,
+    fn = null,
+    use = null,
+}, {
+    id = ItemId.Interact,
+    fn = null,
+    use = ItemUse.Interact,
 }, {
     id = ItemId.Axe,
-    path = 'res://scenes/human/axe.png',
-    canSwing = true,
+    fn = 'res://scenes/tools/axe.tscn',
+    use = ItemUse.Swing,
 }, {
     id = ItemId.Pickaxe,
-    path = 'res://scenes/human/pickaxe.png',
-    canSwing = true,
+    fn = 'res://scenes/tools/pickaxe.tscn',
+    use = ItemUse.Swing,
 }, {
     id = ItemId.Hoe,
-    path = 'res://scenes/human/hoe.png',
-    canSwing = true,
+    fn = 'res://scenes/tools/hoe.tscn',
+    use = ItemUse.Swing,
 }, {
     id = ItemId.Wood,
-    path = 'res://scenes/drop/wood.png',
-    canSwing = false,
+    fn = 'res://scenes/drops/wood.tscn',
+    use = null,
+}, {
+    id = ItemId.CauliflowerSeeds,
+    fn = 'res://scenes/plants/cauliflower.tscn',
+    use = ItemUse.Place,
 }])
 
 
@@ -44,9 +61,7 @@ func _makeItemsById(items):
     for item in items:
         dict[item.id] = item
 
-        # TODO Ideally, the info should also contain offset and material, so maybe load a Scene instead?
-        # It's actually one Scene for the backpack selector and one Scene for the player sprite?
-        item.texture = load(item.path) if item.path else null
+        item.scene = load(item.fn) if item.fn else null
 
     return dict
 

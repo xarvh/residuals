@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/pickaxe.png-983484381381e34de0b2e2507a9e72a3.stex"
+path="res://.import/wood.png-000eb3bec4e1d9e8dca5919a0ec4b544.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/human/pickaxe.png"
-dest_files=[ "res://.import/pickaxe.png-983484381381e34de0b2e2507a9e72a3.stex" ]
+source_file="res://scenes/drops/wood.png"
+dest_files=[ "res://.import/wood.png-000eb3bec4e1d9e8dca5919a0ec4b544.stex" ]
 
 [params]
 

@@ -1,9 +1,6 @@
 extends Control
 
 
-const Drop = preload('res://scenes/drop/Drop.tscn')
-
-
 #
 # Config
 #
@@ -39,7 +36,10 @@ func _ready():
         item.expand = true
         item.rect_size.x = size
         item.rect_size.y = size
-        item.rect_position.y = i * size
+        item.rect_scale.x = 4
+        item.rect_scale.y = 4
+        item.rect_position.x = 0.5 * size
+        item.rect_position.y = (0.5 + i) * size
         contentNode.add_child(item)
 
 
@@ -65,10 +65,21 @@ func _process(delta):
     for i in player.backpackSize:
         var itemNode = itemNodes[i]
         var item = Env.itemsById[player.backpackStorage.items[i]]
-        var texture = item.texture if item else null
-        # let's check just in case the assignment does some magic
-        if itemNode.texture != texture:
-            itemNode.texture = texture
+        var children = itemNode.get_children()
+
+        var itemHasScene = item and item.scene
+        var sceneIsAlreadyInstantiated = children.size() > 0 and children[0].filename == item.fn
+        if itemHasScene and sceneIsAlreadyInstantiated:
+            # everything looks already as it should
+            pass
+        else:
+            # update stuff
+            Meta.removeAllChildren(itemNode)
+            if item and item.scene:
+                var instance = item.scene.instance()
+                # This is ugly, but it's needed to show seeds since they usually have z_index = -2
+                instance.z_index = 0
+                itemNode.add_child(instance)
 
 
 #
@@ -113,7 +124,9 @@ func getCellTileName(position):
 #
 #
 func spawnDrop(position, type):
-    var drop = Drop.instance()
+    var itemScene = Env.itemsById[type].scene
+    assert(itemScene)
+    var drop = itemScene.instance()
     drop.position = position
     drop.type = type
     ySort.add_child(drop)

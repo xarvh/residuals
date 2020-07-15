@@ -9,4 +9,9 @@ func _onSwingHit():
 
 
 func setHeldItem(itemId):
-    toolNode.texture = Env.itemsById[itemId].texture
+
+    Meta.removeAllChildren(toolNode)
+
+    var item = Env.itemsById[itemId]
+    if item.scene and item.use == Env.ItemUse.Swing:
+        toolNode.add_child(item.scene.instance())

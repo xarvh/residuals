@@ -41,3 +41,9 @@ static func callOnDescendants(node, methodName, args = []):
         n += callOnDescendants(child, methodName, args)
 
     return n
+
+
+static func removeAllChildren(parent):
+    for n in parent.get_children():
+        parent.remove_child(n)
+        n.queue_free()
