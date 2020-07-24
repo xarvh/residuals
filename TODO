@@ -1,5 +1,5 @@
 
-- Scale map so that 1 cell = size 1?
+- add obstacles
 
 - change inputs so that player moves to target (this means adding obstacles and pathfinding?)
 

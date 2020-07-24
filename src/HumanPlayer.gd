@@ -1,4 +1,4 @@
-extends Node2D
+extends KinematicBody2D
 
 
 const Storage = preload('res://src/Storage.gd')
@@ -44,6 +44,14 @@ func _ready():
 # Process
 #
 func _process(delta):
+    #
+    # Selected item
+    #
+    animationPlayer.setHeldItem(getSelectedBackpackItemId())
+
+
+
+func _physics_process(delta):
     var dx = -1 if Input.is_action_pressed(inputLeft) else 1 if Input.is_action_pressed(inputRight) else 0
     var dy = -1 if Input.is_action_pressed(inputUp) else 1 if Input.is_action_pressed(inputDown) else 0
 
@@ -70,10 +78,7 @@ func _process(delta):
           self.animationPlayer.play("Idle")
 
 
-    #
-    # Selected item
-    #
-    animationPlayer.setHeldItem(getSelectedBackpackItemId())
+
 
 
 
@@ -132,15 +137,12 @@ func getSelectedBackpackItem():
 
 func _walk_or_idle(dx, dy, delta):
     if dx or dy:
-        var n = sqrt(dx * dx + dy * dy)
-
-        self.position.x += dx / n * delta * walkingSpeed
-        self.position.y += dy / n * delta * walkingSpeed
+        self.move_and_slide(Vector2(dx, dy).normalized() * walkingSpeed)
 
         self.animationPlayer.play("Walk")
 
-        if dx < 0: self.scale.x = -1
-        if dx > 0: self.scale.x = 1
+        if dx < 0: self.get_node('Legs').scale.x = -1
+        if dx > 0: self.get_node('Legs').scale.x = 1
 
     else:
         self.animationPlayer.play("Idle")
