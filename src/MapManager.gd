@@ -32,12 +32,11 @@ func _ready():
     var size = backpackNode.rect_size.x
     var contentNode = backpackNode.get_node('Content')
     for i in player.backpackSize:
+        # TODO use a texture instead than a flat color
         var item = TextureRect.new()
         item.expand = true
         item.rect_size.x = size
         item.rect_size.y = size
-        item.rect_scale.x = 4
-        item.rect_scale.y = 4
         item.rect_position.x = 0.5 * size
         item.rect_position.y = (0.5 + i) * size
         contentNode.add_child(item)
@@ -78,6 +77,7 @@ func _process(delta):
             if item and item.scene:
                 var instance = item.scene.instance()
                 # This is ugly, but it's needed to show seeds since they usually have z_index = -2
+                # TODO also remove scripts?
                 instance.z_index = 0
                 itemNode.add_child(instance)
 
