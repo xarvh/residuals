@@ -76,9 +76,9 @@ func _process(delta):
             Meta.removeAllChildren(itemNode)
             if item and item.scene:
                 var instance = item.scene.instance()
+                Meta.callOnDescendants(instance, 'initAsInventory')
                 # This is ugly, but it's needed to show seeds since they usually have z_index = -2
-                # TODO also remove scripts?
-                instance.z_index = 0
+                instance.z_index = 2
                 itemNode.add_child(instance)
 
 

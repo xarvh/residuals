@@ -32,12 +32,11 @@ static func callAncestorMethod(child, methodName, args = []):
 static func callOnDescendants(node, methodName, args = []):
     var n = 0
 
+    if node.has_method(methodName):
+        node.callv(methodName, args)
+        n += 1
+
     for child in node.get_children():
-
-        if child.has_method(methodName):
-            child.callv(methodName, args)
-            n += 1
-
         n += callOnDescendants(child, methodName, args)
 
     return n

@@ -1,4 +1,6 @@
 
+- camera follows player
+- disable scene scripts in backpack items (`callOnDescendants('initInBackpack')`?
 - add obstacles
 
 - change inputs so that player moves to target (this means adding obstacles and pathfinding?)

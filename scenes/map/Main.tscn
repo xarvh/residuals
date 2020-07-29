@@ -37,42 +37,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HUD" type="Control" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_bottom = 0.0399971
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Backpack" type="ColorRect" parent="HUD"]
-anchor_top = 0.5
-anchor_bottom = 0.5
-margin_left = 8.0
-margin_top = -40.0
-margin_right = 16.0
-margin_bottom = 40.0
-color = Color( 1, 0.839216, 0.529412, 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="ToolSelection" type="ReferenceRect" parent="HUD/Backpack"]
-margin_right = 8.0
-margin_bottom = 8.0
-border_color = Color( 0, 0, 0, 1 )
-editor_only = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Content" type="Control" parent="HUD/Backpack"]
-margin_right = 8.0
-margin_bottom = 8.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
 [node name="Map" type="Node2D" parent="."]
 
 [node name="HoeOnGround" type="AudioStreamPlayer" parent="Map"]
@@ -126,3 +90,39 @@ position = Vector2( 22.3101, 54.551 )
 [node name="Wood" parent="Map/YSort" instance=ExtResource( 5 )]
 position = Vector2( 21.5235, 57.0664 )
 type = 5
+
+[node name="HUD" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = 0.0399933
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Backpack" type="ColorRect" parent="HUD"]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_left = 8.0
+margin_top = -40.0
+margin_right = 16.0
+margin_bottom = 40.0
+color = Color( 1, 0.839216, 0.529412, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ToolSelection" type="ReferenceRect" parent="HUD/Backpack"]
+margin_right = 8.0
+margin_bottom = 8.0
+border_color = Color( 0, 0, 0, 1 )
+editor_only = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Content" type="Control" parent="HUD/Backpack"]
+margin_right = 8.0
+margin_bottom = 8.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -22,12 +22,19 @@ export(Env.ItemId) var type = Env.ItemId.Wood
 #
 # Init
 #
+var isInventory = false
 onready var player = null
 onready var velocity = Vector2(rndSpeed(), rndSpeed())
 
 
+func initAsInventory():
+    isInventory = true
+
+
 func _ready():
-    # TODO do this only when the Drop is on the ground?
+    if isInventory:
+        return
+
     var area = CollisionArea.instance()
     add_child(area)
     area.connect("area_entered", self, "_on_Area2D_area_entered")
